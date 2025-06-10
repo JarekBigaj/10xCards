@@ -11,6 +11,44 @@ export const CheckDuplicateRequestSchema = z.object({
 });
 
 /**
+ * Schema for flashcard list query parameters validation
+ */
+export const FlashcardListQuerySchema = z.object({
+  page: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseInt(val, 10) : 1))
+    .pipe(z.number().int().min(1, "Page must be at least 1")),
+  limit: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseInt(val, 10) : 20))
+    .pipe(z.number().int().min(1, "Limit must be at least 1").max(100, "Limit cannot exceed 100")),
+  source: z
+    .enum(["ai-full", "ai-edit", "manual"], {
+      errorMap: () => ({ message: "Source must be one of: ai-full, ai-edit, manual" }),
+    })
+    .optional(),
+  due_before: z
+    .string()
+    .optional()
+    .refine((val) => !val || !isNaN(Date.parse(val)), {
+      message: "due_before must be a valid ISO timestamp",
+    }),
+  sort: z
+    .enum(["created_at", "due", "difficulty"], {
+      errorMap: () => ({ message: "Sort must be one of: created_at, due, difficulty" }),
+    })
+    .optional(),
+  order: z
+    .enum(["asc", "desc"], {
+      errorMap: () => ({ message: "Order must be either asc or desc" }),
+    })
+    .optional()
+    .default("desc"),
+});
+
+/**
  * Schema for flashcard creation request validation
  */
 export const CreateFlashcardRequestSchema = z.object({

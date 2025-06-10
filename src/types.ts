@@ -101,7 +101,7 @@ export type AiGenerateCandidatesResponse = ApiResponse<AiGenerateCandidatesRespo
 /**
  * Flashcard DTO for API responses - excludes sensitive/internal fields
  */
-export type FlashcardDto = Omit<Tables<"flashcards">, "user_id" | "is_deleted">;
+export type FlashcardDto = Omit<Tables<"flashcards">, "user_id" | "is_deleted" | "front_text_hash" | "back_text_hash">;
 
 /**
  * Request body for creating a single flashcard
