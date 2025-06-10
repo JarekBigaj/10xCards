@@ -19,6 +19,8 @@ This table is managed by Supabase Auth.
 - user_id: UUID NOT NULL REFERENCES users(id)
 - front_text: VARCHAR(200) NOT NULL
 - back_text: VARCHAR(500) NOT NULL
+- front_text_hash: CHAR(64) NOT NULL -- SHA-256 hash of front_text for fast duplicate checking
+- back_text_hash: CHAR(64) NOT NULL -- SHA-256 hash of back_text for content similarity
 - source: VARCHAR(20) NOT NULL CHECK (source IN ('ai-full','ai-edit','manual'))
 - due: TIMESTAMPTZ NOT NULL DEFAULT now()
 - scheduled_days: INTEGER NOT NULL DEFAULT 0
@@ -47,6 +49,8 @@ This table is managed by Supabase Auth.
 
 - PRIMARY KEY jest automatycznie indeksowany na kolumnie `id` w każdej tabeli
 - UNIQUE INDEX `ux_flashcards_user_front` ON `flashcards`(`user_id`, `front_text`) WHERE `is_deleted` = false
+- INDEX `idx_flashcards_user_front_hash` ON `flashcards`(`user_id`, `front_text_hash`) WHERE `is_deleted` = false -- Fast duplicate detection
+- INDEX `idx_flashcards_back_hash` ON `flashcards`(`back_text_hash`) WHERE `is_deleted` = false -- Content similarity search
 - INDEX `idx_flashcards_user_due` ON `flashcards`(`user_id`, `due`)
 - INDEX `idx_flashcards_user_created_at` ON `flashcards`(`user_id`, `created_at`)
 - INDEX `idx_review_records_flashcard_created_at` ON `review_records`(`flashcard_id`, `created_at`)
@@ -69,6 +73,15 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Function to calculate SHA-256 hash for flashcard content
+CREATE FUNCTION calculate_flashcard_hashes() RETURNS trigger AS $$
+BEGIN
+  NEW.front_text_hash = encode(digest(NEW.front_text, 'sha256'), 'hex');
+  NEW.back_text_hash = encode(digest(NEW.back_text, 'sha256'), 'hex');
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE TRIGGER trg_set_updated_at_users
   BEFORE UPDATE ON users
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
@@ -76,6 +89,10 @@ CREATE TRIGGER trg_set_updated_at_users
 CREATE TRIGGER trg_set_updated_at_flashcards
   BEFORE UPDATE ON flashcards
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+CREATE TRIGGER trg_calculate_flashcard_hashes
+  BEFORE INSERT OR UPDATE ON flashcards
+  FOR EACH ROW EXECUTE FUNCTION calculate_flashcard_hashes();
 ```
 
 ### RLS (Row Level Security)
@@ -113,5 +130,8 @@ CREATE POLICY update_reviews ON review_records
 
 - W przyszłości można rozważyć partycjonowanie tabel `flashcards` lub `review_records` (np. według user_id lub due) w celu poprawy wydajności.
 - Weryfikacja duplikatów `front_text` realizowana jest przez unikalny warunkowy indeks.
+- **Hash-based duplicate detection**: Kolumny `front_text_hash` i `back_text_hash` umożliwiają szybkie sprawdzanie duplikatów i podobieństwa treści bez pełnego skanowania tekstu.
+- **Content similarity**: `back_text_hash` może być używany do znajdowania podobnych fiszek między użytkownikami (future feature).
+- **AI caching**: Hashe mogą być używane do cache'owania wyników AI dla identycznych tekstów wejściowych.
 - Soft delete realizowany jest przez kolumnę `is_deleted` oraz RLS filtrujące usunięte wiersze.
 - Mechanizm retry i circuit-breaker implementowany jest w warstwie aplikacji (Openrouter.ai).

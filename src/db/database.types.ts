@@ -23,43 +23,49 @@ export interface Database {
       flashcards: {
         Row: {
           back_text: string;
+          back_text_hash: string;
           created_at: string;
           difficulty: number;
           due: string;
           front_text: string;
+          front_text_hash: string;
           id: string;
           is_deleted: boolean;
           reps: number;
           scheduled_days: number;
-          source: string;
+          source: Database["public"]["Enums"]["flashcard_source"];
           updated_at: string;
           user_id: string;
         };
         Insert: {
           back_text: string;
+          back_text_hash?: string;
           created_at?: string;
           difficulty?: number;
           due?: string;
           front_text: string;
+          front_text_hash?: string;
           id?: string;
           is_deleted?: boolean;
           reps?: number;
           scheduled_days?: number;
-          source: string;
+          source: Database["public"]["Enums"]["flashcard_source"];
           updated_at?: string;
           user_id: string;
         };
         Update: {
           back_text?: string;
+          back_text_hash?: string;
           created_at?: string;
           difficulty?: number;
           due?: string;
           front_text?: string;
+          front_text_hash?: string;
           id?: string;
           is_deleted?: boolean;
           reps?: number;
           scheduled_days?: number;
-          source?: string;
+          source?: Database["public"]["Enums"]["flashcard_source"];
           updated_at?: string;
           user_id?: string;
         };
@@ -103,7 +109,9 @@ export interface Database {
     };
     Views: Record<never, never>;
     Functions: Record<never, never>;
-    Enums: Record<never, never>;
+    Enums: {
+      flashcard_source: "ai-full" | "ai-edit" | "manual";
+    };
     CompositeTypes: Record<never, never>;
   };
 }
@@ -208,6 +216,12 @@ export const Constants = {
     Enums: {},
   },
   public: {
-    Enums: {},
+    Enums: {
+      flashcard_source: {
+        "ai-full": "ai-full" as const,
+        "ai-edit": "ai-edit" as const,
+        manual: "manual" as const,
+      },
+    },
   },
 } as const;

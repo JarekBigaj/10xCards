@@ -412,6 +412,53 @@ export interface GenerationAnalyticsQuery {
 }
 
 // =============================================================================
+// HASH AND DUPLICATE DETECTION TYPES
+// =============================================================================
+
+/**
+ * Hash utilities for content deduplication
+ */
+export interface ContentHash {
+  front_text_hash: string; // SHA-256 hash
+  back_text_hash: string; // SHA-256 hash
+}
+
+/**
+ * Duplicate check request for flashcards
+ */
+export interface CheckDuplicateRequest {
+  front_text: string;
+  back_text?: string; // Optional for similarity check
+  user_id?: string; // Optional for user-specific check
+}
+
+/**
+ * Duplicate check response
+ */
+export interface DuplicateCheckResponseData {
+  is_duplicate: boolean;
+  existing_flashcard_id?: string;
+  similarity_score?: number; // 0-1 for content similarity
+  duplicate_type: "exact" | "similar" | "none";
+}
+
+/**
+ * Complete response for duplicate check
+ */
+export type DuplicateCheckResponse = ApiResponse<DuplicateCheckResponseData>;
+
+/**
+ * AI generation cache entry
+ */
+export interface AiGenerationCacheEntry {
+  input_text_hash: string; // SHA-256 of input text
+  candidates: AiCandidate[];
+  generation_metadata: GenerationMetadata;
+  cached_at: string; // ISO timestamp
+  expires_at: string; // ISO timestamp
+}
+
+// =============================================================================
 // TYPE GUARDS AND VALIDATION HELPERS
 // =============================================================================
 
@@ -482,4 +529,40 @@ export type ApiErrorCode =
 export interface SuccessResponse {
   success: true;
   message: string;
+}
+
+/**
+ * Complete flashcard data - alias for FlashcardDto for consistency across codebase
+ */
+export type Flashcard = FlashcardDto;
+
+/**
+ * Response for single flashcard operations (GET, PUT)
+ */
+export type FlashcardResponse = ApiResponse<FlashcardDto>;
+
+/**
+ * Response data for flashcard list operations with metadata
+ */
+export interface FlashcardsResponseData {
+  flashcards: FlashcardDto[];
+  total: number;
+  generated_count?: number; // For AI generation responses
+  duplicate_count?: number; // For AI generation responses
+}
+
+/**
+ * Complete response for flashcard list operations
+ */
+export type FlashcardsResponse = ApiResponse<FlashcardsResponseData>;
+
+/**
+ * Request for AI flashcard generation with specific parameters
+ */
+export interface GenerateFlashcardsRequest {
+  topic: string; // Main topic for generation
+  difficulty_level: "easy" | "medium" | "hard"; // Difficulty level
+  count: number; // Number of flashcards to generate (1-10)
+  category?: string; // Optional category
+  additional_context?: string; // Optional additional context
 }

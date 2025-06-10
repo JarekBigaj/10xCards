@@ -59,6 +59,38 @@
 
 ### Flashcards Endpoints
 
+#### Check for Duplicates
+
+- **Method**: POST
+- **Path**: `/api/flashcards/check-duplicate`
+- **Description**: Check if a flashcard with similar content already exists
+- **Request Body**:
+
+```json
+{
+  "front_text": "string (required)",
+  "back_text": "string (optional, for similarity check)",
+  "user_id": "string (optional, defaults to current user)"
+}
+```
+
+- **Response Body**:
+
+```json
+{
+  "success": true,
+  "data": {
+    "is_duplicate": true,
+    "existing_flashcard_id": "uuid",
+    "similarity_score": 0.95,
+    "duplicate_type": "exact"
+  }
+}
+```
+
+- **Success Codes**: 200 OK
+- **Error Codes**: 400 Bad Request, 401 Unauthorized
+
 #### Get User's Flashcards
 
 - **Method**: GET
@@ -223,7 +255,7 @@
 {
   "front_text": "string (max 200 chars, optional)",
   "back_text": "string (max 500 chars, optional)",
-  "source": "ai-edit|manual (required)",
+  "source": "ai-edit|manual (required)"
 }
 ```
 
@@ -231,9 +263,9 @@
 - **Success Codes**: 200 OK
 - **Error Codes**: 400 Bad Request, 404 Not Found, 409 Conflict
 - **Validations**:
-    - `front` maximum length: 200 characters.
-    - `back` maximum length: 500 characters.
-    - `source`: Must be one of `ai-edit` or `manual`
+  - `front` maximum length: 200 characters.
+  - `back` maximum length: 500 characters.
+  - `source`: Must be one of `ai-edit` or `manual`
 
 #### Delete Flashcard
 

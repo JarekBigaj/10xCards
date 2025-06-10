@@ -244,9 +244,24 @@ interface OpenRouterRequest {
 ### Optymalizacje:
 
 - **Streaming odpowiedzi**: Dla dużych tekstów rozważenie streaming API
-- **Caching**: Cache dla identycznych tekstów (hash SHA-256 jako klucz)
+- **Input text caching**: Cache dla identycznych tekstów wejściowych (hash SHA-256 jako klucz)
+- **Duplicate detection before AI**: Sprawdzanie czy kandydaci nie są duplikatami istniejących fiszek
+- **Content similarity matching**: Wykorzystanie hashów do znajdowania podobnych treści
 - **Kompresja**: Gzip dla odpowiedzi API
 - **Connection pooling**: Ponowne użycie połączeń HTTP
+
+### Cache implementation:
+
+- **Cache key**: SHA-256 hash of input text (normalized - lowercase, trimmed)
+- **Cache storage**: Redis lub in-memory cache z TTL (np. 24h)
+- **Cache invalidation**: Time-based expiration
+- **Cache hit optimization**: Zwrócenie cached results bez wywołania AI API
+
+### Duplicate detection workflow:
+
+1. **Pre-generation check**: Przed wywołaniem AI sprawdź czy input text już był przetwarzany
+2. **Post-generation check**: Po wygenerowaniu kandydatów sprawdź duplikaty z istniejącymi fiszkami
+3. **User notification**: Informuj użytkownika o znalezionych duplikatach z opcją "skip" lub "modify"
 
 ### Monitoring wydajności:
 
