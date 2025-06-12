@@ -1,8 +1,22 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
 import { FlashcardService } from "../../lib/services/flashcard.service";
-import { FlashcardListQuerySchema, formatFlashcardValidationErrors } from "../../lib/validation/flashcard-schemas";
-import type { FlashcardsListResponse, ErrorResponse, FlashcardListQuery, ApiError } from "../../types";
+import {
+  FlashcardListQuerySchema,
+  formatFlashcardValidationErrors,
+  CreateFlashcardRequestSchema,
+  CreateFlashcardsRequestSchema,
+} from "../../lib/validation/flashcard-schemas";
+import type {
+  FlashcardsListResponse,
+  ErrorResponse,
+  FlashcardListQuery,
+  CreateFlashcardRequest,
+  CreateFlashcardsRequest,
+  CreateFlashcardResponse,
+  CreateFlashcardsResponse,
+  CreateFlashcardCommand,
+} from "../../types";
 
 export const prerender = false;
 
@@ -93,6 +107,195 @@ export const GET: APIRoute = async ({ request, locals }) => {
         statusCode = 500;
       } else {
         errorMessage = error.message;
+      }
+    }
+
+    const errorResponse: ErrorResponse = {
+      success: false,
+      error: errorMessage,
+    };
+
+    return new Response(JSON.stringify(errorResponse), {
+      status: statusCode,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+};
+
+/**
+ * POST /api/flashcards
+ * Create single or multiple flashcards
+ */
+export const POST: APIRoute = async ({ request, locals }) => {
+  try {
+    // Check authentication
+    const supabase = locals.supabase;
+    if (!supabase) {
+      const errorResponse: ErrorResponse = {
+        success: false,
+        error: "Supabase client not available",
+      };
+      return new Response(JSON.stringify(errorResponse), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Get current user
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      const errorResponse: ErrorResponse = {
+        success: false,
+        error: "Authentication required",
+      };
+      return new Response(JSON.stringify(errorResponse), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Parse request body
+    let requestBody: unknown;
+    try {
+      requestBody = await request.json();
+    } catch (_error) {
+      const errorResponse: ErrorResponse = {
+        success: false,
+        error: "Invalid JSON in request body",
+      };
+      console.error("Error in POST /api/flashcards:", _error);
+      return new Response(JSON.stringify(errorResponse), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Validate request body structure
+    let validatedRequest: CreateFlashcardRequest | CreateFlashcardsRequest;
+    let isBatchRequest = false;
+
+    try {
+      // Try to parse as batch request first
+      if (typeof requestBody === "object" && requestBody !== null && "flashcards" in requestBody) {
+        validatedRequest = CreateFlashcardsRequestSchema.parse(requestBody);
+        isBatchRequest = true;
+      } else {
+        // Parse as single flashcard request
+        validatedRequest = CreateFlashcardRequestSchema.parse(requestBody);
+        isBatchRequest = false;
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const validationErrors = formatFlashcardValidationErrors(error);
+        const errorResponse: ErrorResponse = {
+          success: false,
+          error: "Validation failed",
+          details: validationErrors,
+        };
+        return new Response(JSON.stringify(errorResponse), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      throw error;
+    }
+
+    // Initialize service
+    const flashcardService = new FlashcardService(supabase);
+
+    if (isBatchRequest) {
+      // Handle batch creation
+      const batchRequest = validatedRequest as CreateFlashcardsRequest;
+
+      // Convert requests to commands
+      const commands: CreateFlashcardCommand[] = batchRequest.flashcards.map((req) => ({
+        front_text: req.front_text,
+        back_text: req.back_text,
+        source: req.source,
+        user_id: user.id,
+        candidate_id: req.candidate_id,
+      }));
+
+      const result = await flashcardService.createFlashcards(commands);
+
+      // Determine response status
+      let statusCode = 201;
+      if (result.failed_count > 0) {
+        statusCode = result.created_count > 0 ? 207 : 400; // Multi-Status or Bad Request
+      }
+
+      const successResponse: CreateFlashcardsResponse = {
+        success: true,
+        data: result,
+      };
+
+      return new Response(JSON.stringify(successResponse), {
+        status: statusCode,
+        headers: { "Content-Type": "application/json" },
+      });
+    } else {
+      // Handle single flashcard creation
+      const singleRequest = validatedRequest as CreateFlashcardRequest;
+
+      const command: CreateFlashcardCommand = {
+        front_text: singleRequest.front_text,
+        back_text: singleRequest.back_text,
+        source: singleRequest.source,
+        user_id: user.id,
+        candidate_id: singleRequest.candidate_id,
+      };
+
+      try {
+        const result = await flashcardService.createFlashcard(command);
+
+        const successResponse: CreateFlashcardResponse = {
+          success: true,
+          data: result,
+        };
+
+        return new Response(JSON.stringify(successResponse), {
+          status: 201,
+          headers: { "Content-Type": "application/json" },
+        });
+      } catch (error) {
+        if (error instanceof Error && error.message === "DUPLICATE") {
+          const errorResponse: ErrorResponse = {
+            success: false,
+            error: "Flashcard with this front text already exists",
+            details: [
+              {
+                field: "front_text",
+                code: "DUPLICATE",
+                message: "A flashcard with this front text already exists",
+              },
+            ],
+          };
+          return new Response(JSON.stringify(errorResponse), {
+            status: 409,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        throw error;
+      }
+    }
+  } catch (error) {
+    console.error("Error in POST /api/flashcards:", error);
+
+    // Handle specific error types
+    let errorMessage = "Internal server error";
+    let statusCode = 500;
+
+    if (error instanceof Error) {
+      errorMessage = error.message;
+
+      // Check for payload size errors
+      if (error.message.includes("Payload Too Large") || error.message.includes("413")) {
+        statusCode = 413;
+        errorMessage = "Request payload too large";
       }
     }
 

@@ -49,6 +49,13 @@ export const FlashcardListQuerySchema = z.object({
 });
 
 /**
+ * Schema for UUID path parameter validation
+ */
+export const UuidPathParamSchema = z.object({
+  id: z.string().uuid("Invalid flashcard ID format"),
+});
+
+/**
  * Schema for flashcard creation request validation
  */
 export const CreateFlashcardRequestSchema = z.object({
@@ -63,23 +70,43 @@ export const CreateFlashcardRequestSchema = z.object({
 /**
  * Schema for flashcard update request validation
  */
-export const UpdateFlashcardRequestSchema = z.object({
-  front_text: z
-    .string()
-    .min(1, "Front text cannot be empty")
-    .max(200, "Front text must not exceed 200 characters")
-    .trim()
-    .optional(),
-  back_text: z
-    .string()
-    .min(1, "Back text cannot be empty")
-    .max(500, "Back text must not exceed 500 characters")
-    .trim()
-    .optional(),
-  source: z.enum(["ai-edit", "manual"], {
-    errorMap: () => ({ message: "Source must be either ai-edit or manual for updates" }),
-  }),
+export const UpdateFlashcardRequestSchema = z
+  .object({
+    front_text: z
+      .string()
+      .min(1, "Front text cannot be empty")
+      .max(200, "Front text must not exceed 200 characters")
+      .trim()
+      .optional(),
+    back_text: z
+      .string()
+      .min(1, "Back text cannot be empty")
+      .max(500, "Back text must not exceed 500 characters")
+      .trim()
+      .optional(),
+    source: z.enum(["ai-edit", "manual"], {
+      errorMap: () => ({ message: "Source must be either ai-edit or manual for updates" }),
+    }),
+  })
+  .refine((data) => data.front_text || data.back_text, {
+    message: "At least one field (front_text or back_text) must be provided for update",
+    path: ["front_text", "back_text"],
+  });
+
+/**
+ * Schema for multiple flashcards creation request validation
+ */
+export const CreateFlashcardsRequestSchema = z.object({
+  flashcards: z
+    .array(CreateFlashcardRequestSchema)
+    .min(1, "At least one flashcard is required")
+    .max(50, "Cannot create more than 50 flashcards at once"),
 });
+
+/**
+ * Union schema to handle both single and multiple flashcard creation
+ */
+export const FlashcardCreationRequestSchema = z.union([CreateFlashcardRequestSchema, CreateFlashcardsRequestSchema]);
 
 /**
  * Utility function to normalize text for comparison

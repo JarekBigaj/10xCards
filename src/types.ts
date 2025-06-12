@@ -116,11 +116,9 @@ export interface CreateFlashcardRequest {
 /**
  * Request body for creating multiple flashcards
  */
-export type CreateFlashcardsRequest = {
-  flashcards: readonly [CreateFlashcardRequest, ...CreateFlashcardRequest[]]; // Min 1
-} & {
-  flashcards: { length: number } & CreateFlashcardRequest[];
-};
+export interface CreateFlashcardsRequest {
+  flashcards: CreateFlashcardRequest[]; // Min 1, max 50 elements
+}
 
 /**
  * Response data for single flashcard creation
