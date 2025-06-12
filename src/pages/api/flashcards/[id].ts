@@ -12,7 +12,13 @@ import {
   createValidationErrorResponse,
   handleServiceError,
 } from "../../../lib/utils";
-import type { FlashcardResponse, UpdateFlashcardRequest, UpdateFlashcardCommand } from "../../../types";
+import type {
+  FlashcardResponse,
+  UpdateFlashcardRequest,
+  UpdateFlashcardCommand,
+  DeleteFlashcardCommand,
+  SuccessResponse,
+} from "../../../types";
 
 export const prerender = false;
 
@@ -108,6 +114,84 @@ export const PUT: APIRoute = async ({ request, params, locals }) => {
     }
   } catch (error) {
     console.error("Error in PUT /api/flashcards/[id]:", error);
+
+    // Handle unexpected errors using centralized error handler
+    if (error instanceof Error) {
+      return handleServiceError(error).response;
+    }
+
+    // Fallback for non-Error objects
+    return createServerErrorResponse("An unexpected error occurred").response;
+  }
+};
+
+/**
+ * DELETE /api/flashcards/{id}
+ * Soft delete a flashcard (mark as deleted)
+ */
+export const DELETE: APIRoute = async ({ params, locals }) => {
+  try {
+    // Check authentication
+    const supabase = locals.supabase;
+    if (!supabase) {
+      return createServerErrorResponse("Supabase client not available").response;
+    }
+
+    // Get current user
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return createAuthErrorResponse().response;
+    }
+
+    // Validate path parameter (flashcard ID)
+    let validatedParams: { id: string };
+    try {
+      validatedParams = UuidPathParamSchema.parse(params);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const validationErrors = formatFlashcardValidationErrors(error);
+        return createValidationErrorResponse("Invalid flashcard ID format", validationErrors).response;
+      }
+      throw error;
+    }
+
+    // Convert to command model
+    const command: DeleteFlashcardCommand = {
+      id: validatedParams.id,
+      user_id: user.id,
+    };
+
+    // Initialize service and delete flashcard
+    const flashcardService = new FlashcardService(supabase);
+
+    try {
+      await flashcardService.deleteFlashcard(command);
+
+      // Return successful response
+      const successResponse: SuccessResponse = {
+        success: true,
+        message: "Flashcard deleted successfully",
+      };
+
+      return new Response(JSON.stringify(successResponse), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (serviceError) {
+      // Handle specific service errors using centralized error handler
+      if (serviceError instanceof Error) {
+        return handleServiceError(serviceError).response;
+      }
+
+      // Re-throw unexpected errors to be handled by the outer catch block
+      throw serviceError;
+    }
+  } catch (error) {
+    console.error("Error in DELETE /api/flashcards/[id]:", error);
 
     // Handle unexpected errors using centralized error handler
     if (error instanceof Error) {

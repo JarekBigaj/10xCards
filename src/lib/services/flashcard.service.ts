@@ -10,6 +10,7 @@ import type {
   FlashcardCreationError,
   ContentHash,
   UpdateFlashcardCommand,
+  DeleteFlashcardCommand,
 } from "../../types";
 import { generateContentHash } from "./duplicate-check.service";
 
@@ -296,8 +297,15 @@ export class FlashcardService {
       }
 
       // Step 2: Prepare update data with current values as defaults
-      const updateData: any = {
-        source: command.source,
+      const updateData: {
+        source: "ai-edit" | "manual";
+        updated_at: string;
+        front_text?: string;
+        front_text_hash?: string;
+        back_text?: string;
+        back_text_hash?: string;
+      } = {
+        source: command.source as "ai-edit" | "manual",
         updated_at: new Date().toISOString(),
       };
 
@@ -345,6 +353,47 @@ export class FlashcardService {
         throw error;
       }
       throw new Error("Failed to update flashcard");
+    }
+  }
+
+  /**
+   * Soft delete a flashcard (set is_deleted = true)
+   */
+  async deleteFlashcard(command: DeleteFlashcardCommand): Promise<void> {
+    try {
+      // Step 1: Check if flashcard exists and belongs to user
+      const existingFlashcard = await this.getFlashcardById(command.id, command.user_id);
+      if (!existingFlashcard) {
+        throw new Error("NOT_FOUND");
+      }
+
+      // Step 2: Perform soft delete - set is_deleted = true
+      const { error } = await this.supabase
+        .from("flashcards")
+        .update({
+          is_deleted: true,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", command.id)
+        .eq("user_id", command.user_id)
+        .eq("is_deleted", false); // Only delete if not already deleted
+
+      if (error) {
+        console.error("Database error in deleteFlashcard:", error);
+        throw new Error(`Failed to delete flashcard: ${error.message}`);
+      }
+
+      // Note: We don't check affected rows since RLS ensures proper access control
+      // and we already verified existence above
+
+      // Log successful deletion for audit purposes
+      console.log(`Flashcard deleted successfully: ${command.id} by user: ${command.user_id}`);
+    } catch (error) {
+      console.error("Error in FlashcardService.deleteFlashcard:", error);
+      if (error instanceof Error && error.message === "NOT_FOUND") {
+        throw error;
+      }
+      throw new Error("Failed to delete flashcard");
     }
   }
 }
