@@ -197,7 +197,16 @@ W MVP nie obejmujemy:
   Kryteria akceptacji:
 
   - Tylko zalogowany użytkownik może wyświetlać, edytować i usuwać swoje fiszki.
+  - Logowanie wymaga podania adresu email i hasła.
+  - Rejestracja wymaga podania adresu email, hasła i potwierdzenia hasła.
   - Nie ma dostępu do fiszek innych użytkowników ani możliwości współdzielenia
+  - Użytkownik MOŻE wygenerować fiszki z tekstu ale nie może ich zapisać.
+  - Tylko zalogowany użytkownik MOŻĘ zapisać fiszki
+  - Użytkownik może logować się do systemu poprzez przycisk w prawym górnym rogu
+  - Użytkownik może wylogować się z systemu poprzez przycisk w prawym górnym rogu
+  - Logowanie i rejestracja odbywaj sie na dedykowanych stronach
+  - Nie korzystamy z zewnętrznych serwisów logowania (np. Google, GitHub).
+  - Odzyskanie hasła powinno być możliwe
 
 ## 6. Metryki sukcesu
 
