@@ -20,6 +20,8 @@ export const AiCandidateSchema = z.object({
   front_text: z.string().min(1).max(200),
   back_text: z.string().min(1).max(500),
   confidence: z.number().min(0).max(1),
+  difficulty: z.enum(["easy", "medium", "hard"]),
+  category: z.string(),
 });
 
 /**
@@ -49,8 +51,7 @@ export function sanitizeInputText(text: string): string {
       // Remove control characters safely
       .replace(/[\p{Cc}\p{Cf}]/gu, "")
       .replace(/\s+/g, " ") // Normalize whitespace
-      .substring(0, 10000)
-  ); // Ensure max length
+  ); // Let Zod schema handle length validation
 }
 
 /**

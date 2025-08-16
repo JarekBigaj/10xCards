@@ -1,5 +1,5 @@
 import React from "react";
-import type { GenerationMetadata } from "../../types";
+import type { GenerationMetadata } from "../types";
 
 interface ProgressIndicatorProps {
   progress: GenerationMetadata | null;

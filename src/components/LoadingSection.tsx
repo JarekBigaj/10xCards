@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "./ui/button";
 import { ProgressIndicator } from "./ProgressIndicator";
-import type { GenerationMetadata } from "../../types";
+import type { GenerationMetadata } from "../types";
 
 interface LoadingSectionProps {
   progress: GenerationMetadata | null;

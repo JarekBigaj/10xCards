@@ -70,6 +70,8 @@ export interface AiCandidate {
   front_text: string; // Max 200 chars
   back_text: string; // Max 500 chars
   confidence: number; // 0-1 confidence score
+  difficulty: "easy" | "medium" | "hard"; // Difficulty level
+  category: string; // Category for organization (required)
 }
 
 /**
@@ -563,4 +565,136 @@ export interface GenerateFlashcardsRequest {
   count: number; // Number of flashcards to generate (1-10)
   category?: string; // Optional category
   additional_context?: string; // Optional additional context
+}
+
+// =============================================================================
+// OPENROUTER SERVICE TYPES
+// =============================================================================
+
+/**
+ * Configuration for OpenRouter service
+ */
+export interface OpenRouterServiceConfig {
+  baseUrl: string;
+  timeout: number;
+  maxRetries: number;
+  baseDelay: number;
+  circuitBreakerThreshold: number;
+  circuitBreakerTimeout: number;
+}
+
+/**
+ * JSON Schema for structured responses
+ */
+export interface JSONSchema {
+  type: string;
+  properties: Record<string, unknown>;
+  required: string[];
+  additionalProperties: boolean;
+}
+
+/**
+ * Flashcard generation request for OpenRouter
+ */
+export interface FlashcardGenerationRequest {
+  topic: string;
+  difficulty_level: "easy" | "medium" | "hard";
+  count: number;
+  category?: string;
+  additional_context?: string;
+  retry_count?: number; // For internal retry logic
+}
+
+/**
+ * Individual flashcard in generation response
+ */
+export interface GeneratedFlashcard {
+  front_text: string;
+  back_text: string;
+  difficulty: "easy" | "medium" | "hard";
+  category?: string;
+}
+
+/**
+ * Flashcard generation response
+ */
+export interface FlashcardGenerationResponse {
+  flashcards: GeneratedFlashcard[];
+  metadata: {
+    model_used: string;
+    processing_time_ms: number;
+    retry_count: number;
+  };
+}
+
+/**
+ * OpenRouter API response structure
+ */
+export interface OpenRouterResponse {
+  choices: {
+    message: {
+      content: string;
+    };
+  }[];
+  usage?: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
+}
+
+/**
+ * OpenRouter error types
+ */
+export interface OpenRouterError {
+  code: ErrorCode;
+  message: string;
+  isRetryable: boolean;
+  retryAfter?: number;
+  details?: unknown;
+}
+
+/**
+ * Error codes for OpenRouter service
+ */
+export type ErrorCode =
+  | "NETWORK_ERROR"
+  | "AUTHENTICATION_ERROR"
+  | "RATE_LIMIT_ERROR"
+  | "VALIDATION_ERROR"
+  | "MODEL_ERROR"
+  | "TIMEOUT_ERROR"
+  | "UNKNOWN_ERROR";
+
+/**
+ * Circuit breaker states
+ */
+export enum CircuitBreakerState {
+  CLOSED = "CLOSED",
+  OPEN = "OPEN",
+  HALF_OPEN = "HALF_OPEN",
+}
+
+/**
+ * Service status information
+ */
+export interface ServiceStatus {
+  isHealthy: boolean;
+  circuitBreakerState: CircuitBreakerState;
+  lastError?: string;
+  requestCount: number;
+}
+
+/**
+ * Extended OpenRouter request with response format
+ */
+export interface OpenRouterRequestWithFormat extends OpenRouterRequest {
+  response_format?: {
+    type: "json_schema";
+    json_schema: {
+      name: string;
+      strict: boolean;
+      schema: JSONSchema;
+    };
+  };
 }

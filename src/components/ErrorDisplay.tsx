@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "./ui/button";
 import { RetryCountdown } from "./RetryCountdown";
-import type { AiServiceError } from "../../types";
+import type { AiServiceError } from "../types";
 
 interface ErrorDisplayProps {
   error: AiServiceError;

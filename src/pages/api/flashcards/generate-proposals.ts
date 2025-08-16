@@ -1,21 +1,20 @@
 import type { APIRoute } from "astro";
-import type {
-  AiGenerateCandidatesRequest,
-  AiGenerateCandidatesResponse,
-  ErrorResponse,
-  AiGenerateCandidatesResponseData,
-} from "../../../types";
+import type { FlashcardGenerationRequest, GeneratedFlashcard, ApiResponse, ErrorResponse } from "../../../types";
 import { DEFAULT_USER_ID, supabaseClient } from "../../../db/supabase.client";
 import { FlashcardService } from "../../../lib/services/flashcard.service";
-import {
-  AiGenerateCandidatesRequestSchema,
-  sanitizeInputText,
-  formatValidationErrors,
-} from "../../../lib/validation/ai-schemas";
 import { rateLimiter } from "../../../lib/services/rate-limiter";
 import { z } from "zod";
 
 export const prerender = false;
+
+// Validation schema for flashcard generation request
+const FlashcardGenerationRequestSchema = z.object({
+  topic: z.string().min(3, "Topic must be at least 3 characters").max(200, "Topic must be less than 200 characters"),
+  difficulty_level: z.enum(["easy", "medium", "hard"]).default("medium"),
+  count: z.number().int().min(1, "Count must be at least 1").max(10, "Count must be at most 10").default(5),
+  category: z.string().optional(),
+  additional_context: z.string().max(1000, "Additional context must be less than 1000 characters").optional(),
+});
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -43,22 +42,22 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Validate request data
-    let validatedData: AiGenerateCandidatesRequest;
+    let validatedData: FlashcardGenerationRequest;
     try {
-      // Sanitize text input before validation
-      if (requestBody && typeof requestBody === "object" && "text" in requestBody) {
-        const bodyWithText = requestBody as { text: unknown };
-        bodyWithText.text = sanitizeInputText(String(bodyWithText.text || ""));
-      }
-
-      validatedData = AiGenerateCandidatesRequestSchema.parse(requestBody);
+      validatedData = FlashcardGenerationRequestSchema.parse(requestBody);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        const details = error.errors.map((err) => ({
+          field: err.path.join("."),
+          code: "VALIDATION_ERROR" as const,
+          message: err.message,
+        }));
+
         return new Response(
           JSON.stringify({
             success: false,
             error: "Validation failed",
-            details: formatValidationErrors(error),
+            details,
           } as ErrorResponse),
           {
             status: 400,
@@ -119,33 +118,23 @@ export const POST: APIRoute = async ({ request }) => {
     const supabase = supabaseClient;
     const flashcardService = new FlashcardService(supabase);
 
-    // Generate flashcard proposals using FlashcardService (which uses OpenRouter)
+    // Generate flashcard proposals using AI service
     try {
-      const result = await flashcardService.generateProposalsFromText(validatedData.text, userId, {
-        difficulty_level: "medium",
-        count: 5,
-        retry_count: validatedData.retry_count || 0,
-      });
+      const result = await flashcardService.generateFlashcardProposals(validatedData, userId);
 
-      // Convert GeneratedFlashcard format to AiCandidate format for backward compatibility
-      const candidates = result.proposals.map((proposal) => ({
-        id: crypto.randomUUID(),
-        front_text: proposal.front_text,
-        back_text: proposal.back_text,
-        confidence: 0.9, // Default confidence for AI-generated content
-        // Preserve additional fields from GeneratedFlashcard
-        difficulty: proposal.difficulty,
-        category: proposal.category || "General", // Ensure category is always a string
-      }));
-
-      const responseData: AiGenerateCandidatesResponseData = {
-        candidates,
-        generation_metadata: result.metadata,
-      };
-
-      const response: AiGenerateCandidatesResponse = {
+      const response: ApiResponse<{
+        proposals: GeneratedFlashcard[];
+        metadata: {
+          model_used: string;
+          processing_time_ms: number;
+          retry_count: number;
+        };
+      }> = {
         success: true,
-        data: responseData,
+        data: {
+          proposals: result.proposals,
+          metadata: result.metadata,
+        },
       };
 
       return new Response(JSON.stringify(response), {
@@ -158,30 +147,6 @@ export const POST: APIRoute = async ({ request }) => {
     } catch (aiError: unknown) {
       // Handle AI service specific errors
       const error = aiError as { code?: string; message?: string; retry_after?: number };
-
-      // Handle validation errors (400 Bad Request)
-      if (
-        error.message?.includes("too long") ||
-        error.message?.includes("exceeds") ||
-        error.message?.includes("characters")
-      ) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: "Validation failed",
-            details: [
-              {
-                code: "VALIDATION_ERROR",
-                message: error.message || "Input validation failed",
-              },
-            ],
-          } as ErrorResponse),
-          {
-            status: 400,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
-      }
 
       if (error.message?.includes("rate limit") || error.message?.includes("429")) {
         return new Response(
@@ -262,7 +227,7 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
   } catch (error) {
-    console.error("Error in generate-candidates endpoint:", error);
+    console.error("Error in generate-proposals endpoint:", error);
 
     return new Response(
       JSON.stringify({

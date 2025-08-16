@@ -11,14 +11,22 @@ import type {
   ContentHash,
   UpdateFlashcardCommand,
   DeleteFlashcardCommand,
+  FlashcardGenerationRequest,
+  GeneratedFlashcard,
 } from "../../types";
 import { generateContentHash } from "./duplicate-check.service";
+import { createAiService } from "./ai.service";
 
 /**
  * FlashcardService - handles flashcard data operations
  */
 export class FlashcardService {
-  constructor(private supabase: SupabaseClient) {}
+  private readonly aiService: ReturnType<typeof createAiService>;
+
+  constructor(private supabase: SupabaseClient) {
+    // Initialize AI service for generating flashcard proposals
+    this.aiService = createAiService(import.meta.env.OPENROUTER_API_KEY); // Use OpenRouter by default
+  }
 
   /**
    * Get user's flashcards with filtering, sorting, and pagination
@@ -395,5 +403,166 @@ export class FlashcardService {
       }
       throw new Error("Failed to delete flashcard");
     }
+  }
+
+  /**
+   * Generate flashcard proposals using AI service
+   */
+  async generateFlashcardProposals(
+    request: FlashcardGenerationRequest,
+    userId: string
+  ): Promise<{
+    proposals: GeneratedFlashcard[];
+    metadata: {
+      model_used: string;
+      processing_time_ms: number;
+      retry_count: number;
+    };
+  }> {
+    try {
+      // Use AI service to generate flashcard proposals
+      const result = await this.aiService.generateCustomCandidates(request);
+
+      // Convert AiCandidate format to GeneratedFlashcard format
+      const proposals: GeneratedFlashcard[] = result.candidates.map((candidate) => ({
+        front_text: candidate.front_text,
+        back_text: candidate.back_text,
+        difficulty: candidate.difficulty, // Preserve AI-generated difficulty
+        category: candidate.category, // Preserve AI-generated category
+      }));
+
+      return {
+        proposals,
+        metadata: {
+          ...result.metadata,
+          retry_count: request.retry_count || 0,
+        },
+      };
+    } catch (error) {
+      console.error("Error in FlashcardService.generateFlashcardProposals:", error);
+
+      // If AI service fails, throw a user-friendly error
+      if (error instanceof Error) {
+        throw new Error(`Failed to generate flashcard proposals: ${error.message}`);
+      }
+
+      throw new Error("Failed to generate flashcard proposals");
+    }
+  }
+
+  /**
+   * Generate flashcard proposals from text input (simplified interface)
+   */
+  async generateProposalsFromText(
+    text: string,
+    userId: string,
+    options?: {
+      difficulty_level?: "easy" | "medium" | "hard";
+      count?: number;
+      category?: string;
+      retry_count?: number;
+    }
+  ): Promise<{
+    proposals: GeneratedFlashcard[];
+    metadata: {
+      model_used: string;
+      processing_time_ms: number;
+      retry_count: number;
+    };
+  }> {
+    // Generate a concise topic from the text (max 200 chars for OpenRouter)
+    const topic = this.generateTopicFromText(text);
+
+    // Log the generated topic for debugging (only in development)
+    if (import.meta.env.DEV) {
+      console.log("Generated topic length:", topic.length);
+      console.log("Generated topic:", topic);
+      console.log("Full text length:", text.length);
+    }
+
+    // Verify topic length is within limits
+    if (topic.length > 200) {
+      console.error("ERROR: Generated topic exceeds 200 characters:", topic.length);
+      throw new Error(`Generated topic is too long: ${topic.length} characters (max 200)`);
+    }
+
+    // Prepare additional_context (max 1000 chars for OpenRouter)
+    // Ensure we leave space for ellipsis if needed
+    const maxContextLength = 997; // 1000 - 3 for "..." if needed
+    const additionalContext = text.length > maxContextLength ? text.substring(0, maxContextLength) + "..." : text;
+
+    // Verify additional_context length is within limits
+    if (additionalContext.length > 1000) {
+      console.error("ERROR: Additional context exceeds 1000 characters:", additionalContext.length);
+      throw new Error(`Additional context is too long: ${additionalContext.length} characters (max 1000)`);
+    }
+
+    // Log additional context for debugging (only in development)
+    if (import.meta.env.DEV) {
+      console.log("Additional context length:", additionalContext.length);
+      console.log("Additional context preview:", additionalContext.substring(0, 100) + "...");
+    }
+
+    const request: FlashcardGenerationRequest = {
+      topic,
+      difficulty_level: options?.difficulty_level || "medium",
+      count: options?.count || 5,
+      category: options?.category,
+      additional_context: additionalContext, // Use truncated text as additional context
+      retry_count: options?.retry_count || 0,
+    };
+
+    return this.generateFlashcardProposals(request, userId);
+  }
+
+  /**
+   * Generate a concise topic from input text (max 200 chars)
+   */
+  private generateTopicFromText(text: string): string {
+    // If text is already short enough, use it as is
+    if (text.length <= 200) {
+      return text;
+    }
+
+    // We need to ensure the final topic is <= 200 chars
+    // Account for potential ellipsis (3 chars)
+    const maxLength = 197; // 200 - 3 for ellipsis
+    let truncated = text.substring(0, maxLength);
+
+    // Look for sentence endings (., !, ?) to make a clean cut
+    const sentenceEndings = [".", "!", "?", "\n"];
+    let bestCut = maxLength;
+
+    for (const ending of sentenceEndings) {
+      const lastIndex = truncated.lastIndexOf(ending);
+      if (lastIndex > maxLength * 0.7) {
+        // Only cut if we're not losing too much
+        bestCut = lastIndex + 1;
+        break;
+      }
+    }
+
+    // If no good sentence boundary found, look for word boundaries
+    if (bestCut === maxLength) {
+      const lastSpace = truncated.lastIndexOf(" ");
+      if (lastSpace > maxLength * 0.8) {
+        bestCut = lastSpace;
+      }
+    }
+
+    const topic = text.substring(0, bestCut).trim();
+
+    // Always add ellipsis since we truncated
+    return topic + "...";
+  }
+
+  /**
+   * Get AI service status and metrics
+   */
+  getAiServiceStatus() {
+    return {
+      openRouterStatus: this.aiService.getOpenRouterStatus(),
+      openRouterMetrics: this.aiService.getOpenRouterMetrics(),
+    };
   }
 }
