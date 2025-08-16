@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
 import { FlashcardService } from "../../lib/services/flashcard.service";
+import { getCurrentUserId, createAuthenticationError } from "../../lib/utils/auth";
 import {
   FlashcardListQuerySchema,
   formatFlashcardValidationErrors,
@@ -39,17 +40,11 @@ export const GET: APIRoute = async ({ request, locals }) => {
       });
     }
 
-    // Get current user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    // Get current user ID (handles both test mode and production auth)
+    const { userId, error: authError } = await getCurrentUserId(supabase);
 
-    if (authError || !user) {
-      const errorResponse: ErrorResponse = {
-        success: false,
-        error: "Authentication required",
-      };
+    if (!userId || authError) {
+      const errorResponse = createAuthenticationError();
       return new Response(JSON.stringify(errorResponse), {
         status: 401,
         headers: { "Content-Type": "application/json" },
@@ -81,7 +76,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
     // Initialize service and fetch flashcards
     const flashcardService = new FlashcardService(supabase);
-    const result = await flashcardService.getFlashcards(user.id, validatedQuery);
+    const result = await flashcardService.getFlashcards(userId, validatedQuery);
 
     // Return successful response
     const successResponse: FlashcardsListResponse = {
@@ -141,17 +136,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
     }
 
-    // Get current user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    // Get current user ID (handles both test mode and production auth)
+    const { userId, error: authError } = await getCurrentUserId(supabase);
 
-    if (authError || !user) {
-      const errorResponse: ErrorResponse = {
-        success: false,
-        error: "Authentication required",
-      };
+    if (!userId || authError) {
+      const errorResponse = createAuthenticationError();
       return new Response(JSON.stringify(errorResponse), {
         status: 401,
         headers: { "Content-Type": "application/json" },
@@ -216,7 +205,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         front_text: req.front_text,
         back_text: req.back_text,
         source: req.source,
-        user_id: user.id,
+        user_id: userId,
         candidate_id: req.candidate_id,
       }));
 
@@ -245,7 +234,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         front_text: singleRequest.front_text,
         back_text: singleRequest.back_text,
         source: singleRequest.source,
-        user_id: user.id,
+        user_id: userId,
         candidate_id: singleRequest.candidate_id,
       };
 

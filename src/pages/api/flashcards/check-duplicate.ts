@@ -4,6 +4,7 @@ import {
   formatFlashcardValidationErrors,
 } from "../../../lib/validation/flashcard-schemas";
 import { checkDuplicate } from "../../../lib/services/duplicate-check.service";
+import { getCurrentUserId, createAuthenticationError } from "../../../lib/utils/auth";
 import type { CheckDuplicateRequest, DuplicateCheckResponse, ErrorResponse } from "../../../types";
 
 export const prerender = false;
@@ -14,17 +15,11 @@ export const prerender = false;
  */
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    // Get authenticated user from Supabase
-    const {
-      data: { user },
-      error: authError,
-    } = await locals.supabase.auth.getUser();
+    // Get current user ID (handles both test mode and production auth)
+    const { userId, error: authError } = await getCurrentUserId(locals.supabase);
 
-    if (authError || !user) {
-      const errorResponse: ErrorResponse = {
-        success: false,
-        error: "Unauthorized - Authentication required",
-      };
+    if (!userId || authError) {
+      const errorResponse = createAuthenticationError();
       return new Response(JSON.stringify(errorResponse), {
         status: 401,
         headers: { "Content-Type": "application/json" },
@@ -71,7 +66,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const validatedRequest: CheckDuplicateRequest = validationResult.data;
 
     // Validate user_id if provided - must match authenticated user
-    if (validatedRequest.user_id && validatedRequest.user_id !== user.id) {
+    if (validatedRequest.user_id && validatedRequest.user_id !== userId) {
       const errorResponse: ErrorResponse = {
         success: false,
         error: "Invalid user_id - must match authenticated user",
@@ -90,7 +85,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     // Check for duplicates using the service
-    const duplicateCheckResult = await checkDuplicate(locals.supabase, validatedRequest, user.id);
+    const duplicateCheckResult = await checkDuplicate(locals.supabase, validatedRequest, userId);
 
     // Return successful response
     const successResponse: DuplicateCheckResponse = {

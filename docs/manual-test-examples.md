@@ -15,7 +15,7 @@
 ### 1. Basic Request - Get All Flashcards (Default)
 
 ```bash
-curl -X GET "http://localhost:4321/api/flashcards" \
+curl -X GET "http://localhost:3000/api/flashcards" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE" \
   -H "Content-Type: application/json"
 ```
@@ -32,14 +32,14 @@ curl -X GET "http://localhost:4321/api/flashcards" \
 #### Page 1 with limit 5
 
 ```bash
-curl -X GET "http://localhost:4321/api/flashcards?page=1&limit=5" \
+curl -X GET "http://localhost:3000/api/flashcards?page=1&limit=5" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
 #### Page 2 with limit 5
 
 ```bash
-curl -X GET "http://localhost:4321/api/flashcards?page=2&limit=5" \
+curl -X GET "http://localhost:3000/api/flashcards?page=2&limit=5" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
@@ -53,7 +53,7 @@ curl -X GET "http://localhost:4321/api/flashcards?page=2&limit=5" \
 #### Filter by source: ai-full
 
 ```bash
-curl -X GET "http://localhost:4321/api/flashcards?source=ai-full" \
+curl -X GET "http://localhost:3000/api/flashcards?source=ai-full" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
@@ -62,7 +62,7 @@ curl -X GET "http://localhost:4321/api/flashcards?source=ai-full" \
 #### Filter by source: ai-edit
 
 ```bash
-curl -X GET "http://localhost:4321/api/flashcards?source=ai-edit" \
+curl -X GET "http://localhost:3000/api/flashcards?source=ai-edit" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
@@ -71,7 +71,7 @@ curl -X GET "http://localhost:4321/api/flashcards?source=ai-edit" \
 #### Filter by source: manual
 
 ```bash
-curl -X GET "http://localhost:4321/api/flashcards?source=manual" \
+curl -X GET "http://localhost:3000/api/flashcards?source=manual" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
@@ -80,7 +80,7 @@ curl -X GET "http://localhost:4321/api/flashcards?source=manual" \
 #### Filter by due_before (cards due before tomorrow)
 
 ```bash
-curl -X GET "http://localhost:4321/api/flashcards?due_before=$(date -d 'tomorrow' -Iseconds)" \
+curl -X GET "http://localhost:3000/api/flashcards?due_before=$(date -d 'tomorrow' -Iseconds)" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
@@ -91,7 +91,7 @@ curl -X GET "http://localhost:4321/api/flashcards?due_before=$(date -d 'tomorrow
 #### Sort by due date (ascending)
 
 ```bash
-curl -X GET "http://localhost:4321/api/flashcards?sort=due&order=asc" \
+curl -X GET "http://localhost:3000/api/flashcards?sort=due&order=asc" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
@@ -100,7 +100,7 @@ curl -X GET "http://localhost:4321/api/flashcards?sort=due&order=asc" \
 #### Sort by difficulty (descending)
 
 ```bash
-curl -X GET "http://localhost:4321/api/flashcards?sort=difficulty&order=desc" \
+curl -X GET "http://localhost:3000/api/flashcards?sort=difficulty&order=desc" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
@@ -109,7 +109,7 @@ curl -X GET "http://localhost:4321/api/flashcards?sort=difficulty&order=desc" \
 #### Sort by created_at (ascending)
 
 ```bash
-curl -X GET "http://localhost:4321/api/flashcards?sort=created_at&order=asc" \
+curl -X GET "http://localhost:3000/api/flashcards?sort=created_at&order=asc" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
@@ -120,14 +120,14 @@ curl -X GET "http://localhost:4321/api/flashcards?sort=created_at&order=asc" \
 #### AI-generated cards due before now, sorted by difficulty
 
 ```bash
-curl -X GET "http://localhost:4321/api/flashcards?source=ai-full&due_before=$(date -Iseconds)&sort=difficulty&order=desc" \
+curl -X GET "http://localhost:3000/api/flashcards?source=ai-full&due_before=$(date -Iseconds)&sort=difficulty&order=desc" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
 #### Manual cards, page 1, limit 2
 
 ```bash
-curl -X GET "http://localhost:4321/api/flashcards?source=manual&page=1&limit=2" \
+curl -X GET "http://localhost:3000/api/flashcards?source=manual&page=1&limit=2" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
@@ -136,7 +136,7 @@ curl -X GET "http://localhost:4321/api/flashcards?source=manual&page=1&limit=2" 
 #### Invalid page number
 
 ```bash
-curl -X GET "http://localhost:4321/api/flashcards?page=0" \
+curl -X GET "http://localhost:3000/api/flashcards?page=0" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
@@ -145,7 +145,7 @@ curl -X GET "http://localhost:4321/api/flashcards?page=0" \
 #### Invalid limit (too high)
 
 ```bash
-curl -X GET "http://localhost:4321/api/flashcards?limit=101" \
+curl -X GET "http://localhost:3000/api/flashcards?limit=101" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
@@ -154,7 +154,7 @@ curl -X GET "http://localhost:4321/api/flashcards?limit=101" \
 #### Invalid source
 
 ```bash
-curl -X GET "http://localhost:4321/api/flashcards?source=invalid" \
+curl -X GET "http://localhost:3000/api/flashcards?source=invalid" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
@@ -163,7 +163,7 @@ curl -X GET "http://localhost:4321/api/flashcards?source=invalid" \
 #### Invalid due_before format
 
 ```bash
-curl -X GET "http://localhost:4321/api/flashcards?due_before=invalid-date" \
+curl -X GET "http://localhost:3000/api/flashcards?due_before=invalid-date" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
@@ -172,7 +172,7 @@ curl -X GET "http://localhost:4321/api/flashcards?due_before=invalid-date" \
 #### Invalid sort field
 
 ```bash
-curl -X GET "http://localhost:4321/api/flashcards?sort=invalid" \
+curl -X GET "http://localhost:3000/api/flashcards?sort=invalid" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
@@ -181,7 +181,7 @@ curl -X GET "http://localhost:4321/api/flashcards?sort=invalid" \
 #### No authentication
 
 ```bash
-curl -X GET "http://localhost:4321/api/flashcards"
+curl -X GET "http://localhost:3000/api/flashcards"
 ```
 
 **Expected:** 401 Unauthorized
@@ -191,7 +191,7 @@ curl -X GET "http://localhost:4321/api/flashcards"
 #### Empty result set (future due date)
 
 ```bash
-curl -X GET "http://localhost:4321/api/flashcards?due_before=2020-01-01T00:00:00Z" \
+curl -X GET "http://localhost:3000/api/flashcards?due_before=2020-01-01T00:00:00Z" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
@@ -200,7 +200,7 @@ curl -X GET "http://localhost:4321/api/flashcards?due_before=2020-01-01T00:00:00
 #### Page beyond available data
 
 ```bash
-curl -X GET "http://localhost:4321/api/flashcards?page=999" \
+curl -X GET "http://localhost:3000/api/flashcards?page=999" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 

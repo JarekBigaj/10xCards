@@ -3,7 +3,7 @@
 ## Endpoint URL
 
 ```
-POST http://localhost:4321/api/flashcards/check-duplicate
+POST http://localhost:3000/api/flashcards/check-duplicate
 ```
 
 ## Headers

@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
 import { FlashcardService } from "../../../lib/services/flashcard.service";
+import { getCurrentUserId, createAuthenticationError } from "../../../lib/utils/auth";
 import {
   UuidPathParamSchema,
   UpdateFlashcardRequestSchema,
@@ -34,13 +35,10 @@ export const PUT: APIRoute = async ({ request, params, locals }) => {
       return createServerErrorResponse("Supabase client not available").response;
     }
 
-    // Get current user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    // Get current user ID (handles both test mode and production auth)
+    const { userId, error: authError } = await getCurrentUserId(supabase);
 
-    if (authError || !user) {
+    if (!userId || authError) {
       return createAuthErrorResponse().response;
     }
 
@@ -80,7 +78,7 @@ export const PUT: APIRoute = async ({ request, params, locals }) => {
     // Convert to command model
     const command: UpdateFlashcardCommand = {
       id: validatedParams.id,
-      user_id: user.id,
+      user_id: userId,
       front_text: validatedRequest.front_text,
       back_text: validatedRequest.back_text,
       source: validatedRequest.source,
@@ -91,7 +89,7 @@ export const PUT: APIRoute = async ({ request, params, locals }) => {
     const flashcardService = new FlashcardService(supabase);
 
     try {
-      const result = await flashcardService.updateFlashcard(validatedParams.id, command, user.id);
+      const result = await flashcardService.updateFlashcard(validatedParams.id, command, userId);
 
       // Return successful response
       const successResponse: FlashcardResponse = {
@@ -137,13 +135,10 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
       return createServerErrorResponse("Supabase client not available").response;
     }
 
-    // Get current user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    // Get current user ID (handles both test mode and production auth)
+    const { userId, error: authError } = await getCurrentUserId(supabase);
 
-    if (authError || !user) {
+    if (!userId || authError) {
       return createAuthErrorResponse().response;
     }
 
@@ -162,7 +157,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
     // Convert to command model
     const command: DeleteFlashcardCommand = {
       id: validatedParams.id,
-      user_id: user.id,
+      user_id: userId,
     };
 
     // Initialize service and delete flashcard
