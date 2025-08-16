@@ -1,0 +1,249 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { Navigation } from "../components/navigation/Navigation";
+
+// TODO: Po implementacji autentykacji, sprawdzać czy użytkownik jest zalogowany
+// const { user } = Astro.locals;
+// if (!user) {
+//   return Astro.redirect('/auth/login');
+// }
+
+// Mock user data - zostanie zastąpione prawdziwymi danymi z sesji
+const mockUser = {
+  id: "user-123",
+  email: "user@example.com",
+  email_confirmed: true,
+};
+
+const currentPath = Astro.url.pathname;
+---
+
+<Layout title="Dashboard - 10xCards">
+  <Navigation user={mockUser} currentPath={currentPath} client:load />
+
+  <main class="min-h-screen bg-background">
+    <!-- Welcome Banner -->
+    <div class="bg-gradient-to-r from-primary/5 to-primary/10 border-b border-border">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-2xl font-bold text-foreground sm:text-3xl">Witaj w 10xCards!</h1>
+            <p class="mt-2 text-muted-foreground">Twój osobisty asystent do nauki ze sztuczną inteligencją</p>
+          </div>
+
+          <!-- Quick action - prawy górny róg -->
+          <div class="hidden sm:block">
+            <a
+              href="/generate"
+              class="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors font-medium"
+            >
+              <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                ></path>
+              </svg>
+              Generuj nowe fiszki
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main dashboard content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Główna kolumna - Quick Actions -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Quick Actions Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Generuj fiszki -->
+            <a
+              href="/generate"
+              class="group p-6 bg-card border border-border rounded-xl hover:border-primary/20 hover:shadow-md transition-all"
+            >
+              <div class="flex items-start space-x-4">
+                <div
+                  class="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 group-hover:bg-blue-500/20 transition-colors"
+                >
+                  <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"
+                    ></path>
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <h3 class="font-semibold text-card-foreground group-hover:text-primary transition-colors">
+                    Generuj fiszki
+                  </h3>
+                  <p class="mt-1 text-sm text-muted-foreground">Stwórz nowe fiszki z tekstu za pomocą AI</p>
+                </div>
+              </div>
+            </a>
+
+            <!-- Moje fiszki -->
+            <a
+              href="/flashcards"
+              class="group p-6 bg-card border border-border rounded-xl hover:border-primary/20 hover:shadow-md transition-all"
+            >
+              <div class="flex items-start space-x-4">
+                <div
+                  class="flex h-12 w-12 items-center justify-center rounded-lg bg-green-500/10 text-green-600 dark:text-green-400 group-hover:bg-green-500/20 transition-colors"
+                >
+                  <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                    ></path>
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <h3 class="font-semibold text-card-foreground group-hover:text-primary transition-colors">
+                    Moje fiszki
+                  </h3>
+                  <p class="mt-1 text-sm text-muted-foreground">Przeglądaj i zarządzaj swoimi fiszkami</p>
+                </div>
+              </div>
+            </a>
+
+            <!-- Sesja nauki -->
+            <a
+              href="/study"
+              class="group p-6 bg-card border border-border rounded-xl hover:border-primary/20 hover:shadow-md transition-all"
+            >
+              <div class="flex items-start space-x-4">
+                <div
+                  class="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 group-hover:bg-purple-500/20 transition-colors"
+                >
+                  <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                    ></path>
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <h3 class="font-semibold text-card-foreground group-hover:text-primary transition-colors">
+                    Sesja nauki
+                  </h3>
+                  <p class="mt-1 text-sm text-muted-foreground">Rozpocznij powtórki swoich fiszek</p>
+                </div>
+              </div>
+            </a>
+
+            <!-- Profil -->
+            <a
+              href="/profile"
+              class="group p-6 bg-card border border-border rounded-xl hover:border-primary/20 hover:shadow-md transition-all"
+            >
+              <div class="flex items-start space-x-4">
+                <div
+                  class="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-500/10 text-orange-600 dark:text-orange-400 group-hover:bg-orange-500/20 transition-colors"
+                >
+                  <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <h3 class="font-semibold text-card-foreground group-hover:text-primary transition-colors">Profil</h3>
+                  <p class="mt-1 text-sm text-muted-foreground">Zarządzaj swoim kontem i ustawieniami</p>
+                </div>
+              </div>
+            </a>
+          </div>
+
+          <!-- Recent Activity Section (placeholder) -->
+          <div class="bg-card border border-border rounded-xl p-6">
+            <h2 class="text-lg font-semibold text-card-foreground mb-4">Ostatnia aktywność</h2>
+            <div class="text-center py-8">
+              <div
+                class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-muted text-muted-foreground"
+              >
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                  ></path>
+                </svg>
+              </div>
+              <p class="mt-4 text-muted-foreground">
+                Brak aktywności. Rozpocznij od <a href="/generate" class="text-primary hover:underline"
+                  >wygenerowania pierwszych fiszek</a
+                >!
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar - Stats & Tips -->
+        <div class="space-y-6">
+          <!-- Stats Card (placeholder) -->
+          <div class="bg-card border border-border rounded-xl p-6">
+            <h3 class="font-semibold text-card-foreground mb-4">Twoje statystyki</h3>
+            <div class="space-y-4">
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-muted-foreground">Fiszki ogółem</span>
+                <span class="font-medium text-card-foreground">0</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-muted-foreground">Nauka dzisiaj</span>
+                <span class="font-medium text-card-foreground">0</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-muted-foreground">Seria nauki</span>
+                <span class="font-medium text-card-foreground">0 dni</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tips Card -->
+          <div class="bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-xl p-6">
+            <div class="flex items-start space-x-3">
+              <div class="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary">
+                <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fill-rule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                    clip-rule="evenodd"></path>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <h4 class="font-medium text-card-foreground mb-2">💡 Wskazówka dnia</h4>
+                <p class="text-sm text-muted-foreground">
+                  Najlepsze rezultaty w nauce osiągniesz, ćwicząc regularnie po 15-20 minut dziennie. Spróbuj ustawić
+                  codzienną rutynę nauki!
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Getting Started Card -->
+          <div class="bg-card border border-border rounded-xl p-6">
+            <h3 class="font-semibold text-card-foreground mb-3">🚀 Szybki start</h3>
+            <div class="space-y-3">
+              <div class="flex items-center text-sm">
+                <div class="h-1.5 w-1.5 rounded-full bg-primary mr-3"></div>
+                <span class="text-muted-foreground">Wygeneruj swoje pierwsze fiszki</span>
+              </div>
+              <div class="flex items-center text-sm">
+                <div class="h-1.5 w-1.5 rounded-full bg-muted mr-3"></div>
+                <span class="text-muted-foreground">Rozpocznij pierwszą sesję nauki</span>
+              </div>
+              <div class="flex items-center text-sm">
+                <div class="h-1.5 w-1.5 rounded-full bg-muted mr-3"></div>
+                <span class="text-muted-foreground">Ustaw codzienną rutynę</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>

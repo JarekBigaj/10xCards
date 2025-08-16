@@ -1,8 +1,20 @@
 ---
-import Welcome from "../components/Welcome.astro";
 import Layout from "../layouts/Layout.astro";
+import { Navigation } from "../components/navigation/Navigation";
+import { HomePage } from "../components/HomePage";
+
+// TODO: Po implementacji autentykacji, pobrać prawdziwy stan użytkownika
+// const { user } = Astro.locals;
+
+// Mock user data - zostanie zastąpione prawdziwymi danymi z sesji
+// null = niezalogowany użytkownik (pokaże stronę powitalną)
+// object = zalogowany użytkownik (przekieruje do dashboard)
+const mockUser = null; // Zmień na obiekt user aby przetestować redirect
+
+const currentPath = Astro.url.pathname;
 ---
 
-<Layout>
-  <Welcome />
+<Layout title="10xCards - Inteligentne fiszki z AI">
+  <Navigation user={mockUser} currentPath={currentPath} client:load />
+  <HomePage user={mockUser} client:load />
 </Layout>

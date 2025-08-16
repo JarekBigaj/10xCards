@@ -1,0 +1,11 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { AuthLayout } from "../../components/auth/AuthLayout";
+import { AuthForm } from "../../components/auth/AuthForm";
+---
+
+<Layout title="Logowanie - 10xCards">
+  <AuthLayout title="Zaloguj się" subtitle="Wprowadź swoje dane aby uzyskać dostęp do konta" client:load>
+    <AuthForm mode="login" client:load />
+  </AuthLayout>
+</Layout>

@@ -1,0 +1,210 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { Navigation } from "../components/navigation/Navigation";
+
+// TODO: Po implementacji autentykacji, sprawdzać czy użytkownik jest zalogowany
+// const { user } = Astro.locals;
+// if (!user) {
+//   return Astro.redirect('/auth/login');
+// }
+
+// Mock user data - zostanie zastąpione prawdziwymi danymi z sesji
+const mockUser = {
+  id: "user-123",
+  email: "user@example.com",
+  email_confirmed: true,
+};
+
+const currentPath = Astro.url.pathname;
+---
+
+<Layout title="Profil - 10xCards">
+  <Navigation user={mockUser} currentPath={currentPath} client:load />
+
+  <main class="min-h-screen bg-background">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Page Header -->
+      <div class="mb-8">
+        <h1 class="text-2xl font-bold text-foreground sm:text-3xl">Profil użytkownika</h1>
+        <p class="mt-2 text-muted-foreground">Zarządzaj swoim kontem i preferencjami</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Account Information -->
+          <div class="bg-card border border-border rounded-xl p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-lg font-semibold text-card-foreground">Informacje o koncie</h2>
+              <span class="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-md"> Premium: Niedostępne </span>
+            </div>
+
+            <div class="space-y-6">
+              <!-- Email -->
+              <div>
+                <label class="block text-sm font-medium text-foreground mb-2"> Adres email </label>
+                <div class="flex items-center justify-between p-3 bg-muted/50 rounded-md">
+                  <span class="text-card-foreground">{mockUser.email}</span>
+                  {
+                    mockUser.email_confirmed ? (
+                      <span class="flex items-center text-xs text-green-600 dark:text-green-400">
+                        <svg class="mr-1 h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path
+                            fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                        Potwierdzony
+                      </span>
+                    ) : (
+                      <button class="text-xs text-amber-600 dark:text-amber-400 hover:underline">
+                        Potwierdź email
+                      </button>
+                    )
+                  }
+                </div>
+              </div>
+
+              <!-- Member Since -->
+              <div>
+                <label class="block text-sm font-medium text-foreground mb-2"> Członek od </label>
+                <div class="p-3 bg-muted/50 rounded-md">
+                  <span class="text-card-foreground">Styczeń 2024</span>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
+                <button
+                  class="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-sm font-medium"
+                >
+                  Zmień hasło
+                </button>
+                <button
+                  class="flex-1 px-4 py-2 border border-border text-foreground rounded-md hover:bg-muted transition-colors text-sm font-medium"
+                >
+                  Edytuj profil
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Learning Preferences -->
+          <div class="bg-card border border-border rounded-xl p-6">
+            <h2 class="text-lg font-semibold text-card-foreground mb-6">Preferencje nauki</h2>
+
+            <div class="space-y-6">
+              <!-- Daily Goal -->
+              <div>
+                <label class="block text-sm font-medium text-foreground mb-3"> Dzienny cel nauki </label>
+                <div class="grid grid-cols-3 gap-2">
+                  <button
+                    class="p-3 border border-border rounded-md text-center hover:border-primary hover:bg-primary/5 transition-colors"
+                  >
+                    <div class="font-medium text-card-foreground">5</div>
+                    <div class="text-xs text-muted-foreground">fiszek</div>
+                  </button>
+                  <button class="p-3 border border-primary bg-primary/5 text-primary rounded-md text-center">
+                    <div class="font-medium">10</div>
+                    <div class="text-xs">fiszek</div>
+                  </button>
+                  <button
+                    class="p-3 border border-border rounded-md text-center hover:border-primary hover:bg-primary/5 transition-colors"
+                  >
+                    <div class="font-medium text-card-foreground">20</div>
+                    <div class="text-xs text-muted-foreground">fiszek</div>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Notifications -->
+              <div>
+                <h3 class="text-sm font-medium text-foreground mb-3">Powiadomienia</h3>
+                <div class="space-y-3">
+                  <label class="flex items-center justify-between">
+                    <span class="text-sm text-card-foreground">Przypomnienia o nauce</span>
+                    <input type="checkbox" checked class="rounded border-border text-primary focus:ring-primary/20" />
+                  </label>
+                  <label class="flex items-center justify-between">
+                    <span class="text-sm text-card-foreground">Nowe funkcje</span>
+                    <input type="checkbox" class="rounded border-border text-primary focus:ring-primary/20" />
+                  </label>
+                  <label class="flex items-center justify-between">
+                    <span class="text-sm text-card-foreground">Wskazówki nauki</span>
+                    <input type="checkbox" checked class="rounded border-border text-primary focus:ring-primary/20" />
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Danger Zone -->
+          <div class="bg-card border border-destructive/20 rounded-xl p-6">
+            <h2 class="text-lg font-semibold text-destructive mb-2">Strefa niebezpieczna</h2>
+            <p class="text-sm text-muted-foreground mb-4">
+              Te akcje są nieodwracalne. Upewnij się, że naprawdę chcesz je wykonać.
+            </p>
+            <button
+              class="px-4 py-2 bg-destructive text-white rounded-md hover:bg-destructive/90 transition-colors text-sm font-medium"
+            >
+              Usuń konto
+            </button>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+          <!-- Quick Stats -->
+          <div class="bg-card border border-border rounded-xl p-6">
+            <h3 class="font-semibold text-card-foreground mb-4">Twoje statystyki</h3>
+            <div class="space-y-4">
+              <div class="text-center p-3 bg-muted/50 rounded-md">
+                <div class="text-2xl font-bold text-card-foreground">0</div>
+                <div class="text-xs text-muted-foreground">Fiszki ogółem</div>
+              </div>
+              <div class="text-center p-3 bg-muted/50 rounded-md">
+                <div class="text-2xl font-bold text-card-foreground">0</div>
+                <div class="text-xs text-muted-foreground">Dni nauki</div>
+              </div>
+              <div class="text-center p-3 bg-muted/50 rounded-md">
+                <div class="text-2xl font-bold text-card-foreground">0%</div>
+                <div class="text-xs text-muted-foreground">Skuteczność</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activity -->
+          <div class="bg-card border border-border rounded-xl p-6">
+            <h3 class="font-semibold text-card-foreground mb-4">Ostatnia aktywność</h3>
+            <div class="text-center py-4">
+              <div
+                class="mx-auto h-8 w-8 flex items-center justify-center rounded-full bg-muted text-muted-foreground mb-3"
+              >
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                  ></path>
+                </svg>
+              </div>
+              <p class="text-sm text-muted-foreground">Brak aktywności</p>
+            </div>
+          </div>
+
+          <!-- Help & Support -->
+          <div class="bg-card border border-border rounded-xl p-6">
+            <h3 class="font-semibold text-card-foreground mb-4">Pomoc i wsparcie</h3>
+            <div class="space-y-3">
+              <a href="#" class="block text-sm text-primary hover:underline"> 📚 Przewodnik dla początkujących </a>
+              <a href="#" class="block text-sm text-primary hover:underline"> 💬 Skontaktuj się z pomocą </a>
+              <a href="#" class="block text-sm text-primary hover:underline"> 🔒 Polityka prywatności </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>
