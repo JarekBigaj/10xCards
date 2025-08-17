@@ -1,0 +1,69 @@
+version: 2
+updates:
+  # Aktualizacja npm dependencies
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "jarek" # Zastąp swoją nazwą użytkownika
+    assignees:
+      - "jarek" # Zastąp swoją nazwą użytkownika
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "automated"
+    ignore:
+      # Ignoruj major updates dla krytycznych pakietów
+      - dependency-name: "astro"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+
+  # Aktualizacja GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "1"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "jarek" # Zastąp swoją nazwą użytkownika
+    assignees:
+      - "jarek" # Zastąp swoją nazwą użytkownika
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "github-actions"
+      - "automated"
+
+  # Aktualizacja .nvmrc
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "15"
+      time: "09:00"
+    target-branch: "master"
+    open-pull-requests-limit: 1
+    reviewers:
+      - "jarek" # Zastąp swoją nazwą użytkownika
+    assignees:
+      - "jarek" # Zastąp swoją nazwą użytkownika
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "node-version"
+      - "automated"

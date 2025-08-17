@@ -1,0 +1,7 @@
+name: "Checkout Code"
+description: "Checkout repository code for CI/CD workflows"
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
