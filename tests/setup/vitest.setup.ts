@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom";
-import { beforeAll, afterEach, afterAll, vi } from "vitest";
+import { beforeAll, afterEach, afterAll, vi, expect } from "vitest";
 import { cleanup } from "@testing-library/react";
 import { TEST_ENV } from "./env";
 import { server } from "../mocks/server";
@@ -33,7 +33,7 @@ beforeAll(() => {
       status: 200,
       json: () => Promise.resolve({}),
     })
-  ) as any;
+  ) as unknown as typeof fetch;
 });
 
 // Cleanup after each test
@@ -51,7 +51,7 @@ afterAll(() => {
 
 // Custom matchers
 expect.extend({
-  toBeInTheDocument: (received) => {
+  toBeInTheDocument: (received: unknown) => {
     const pass = received instanceof Element && document.body.contains(received);
     return {
       message: () => `expected element ${pass ? "not " : ""}to be in the document`,

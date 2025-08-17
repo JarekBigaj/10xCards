@@ -13,12 +13,13 @@ interface FlashcardFiltersProps {
 }
 
 export function FlashcardFilters({ filters, onChange, onReset }: FlashcardFiltersProps) {
-  const updateFilter = (key: keyof FlashcardFiltersType, value: any) => {
+  const updateFilter = (key: keyof FlashcardFiltersType, value: unknown) => {
     onChange({ ...filters, [key]: value });
   };
 
   const clearFilter = (key: keyof FlashcardFiltersType) => {
     const newFilters = { ...filters };
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     delete newFilters[key];
     onChange(newFilters);
   };

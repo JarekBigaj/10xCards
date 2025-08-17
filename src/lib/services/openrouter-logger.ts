@@ -235,17 +235,20 @@ export class OpenRouterLogger {
     const prefix = `[${timestamp}] [${levelName}] [${entry.service}:${entry.operation}]`;
 
     if (entry.error) {
+      // eslint-disable-next-line no-console
       console.error(`${prefix} ${entry.message}`, {
         error: entry.error,
         data: entry.data,
         metadata: entry.metadata,
       });
     } else if (entry.level >= LogLevel.WARN) {
+      // eslint-disable-next-line no-console
       console.warn(`${prefix} ${entry.message}`, {
         data: entry.data,
         metadata: entry.metadata,
       });
     } else {
+      // eslint-disable-next-line no-console
       console.log(`${prefix} ${entry.message}`, {
         data: entry.data,
         metadata: entry.metadata,
@@ -256,15 +259,14 @@ export class OpenRouterLogger {
   /**
    * Output log entry to file
    */
-  private outputToFile(entry: LogEntry): void {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private outputToFile(_entry: LogEntry): void {
     // In a real implementation, this would write to a file
     // For now, we'll just simulate it
     if (this.config.format === "json") {
-      const logLine = JSON.stringify(entry) + "\n";
       // TODO: Implement actual file writing
       // fs.appendFileSync(this.config.filePath!, logLine);
     } else {
-      const logLine = `${entry.timestamp} [${LogLevel[entry.level]}] ${entry.service}:${entry.operation} - ${entry.message}\n`;
       // TODO: Implement actual file writing
       // fs.appendFileSync(this.config.filePath!, logLine);
     }
@@ -286,10 +288,11 @@ export class OpenRouterLogger {
     }
 
     if (typeof error === "object" && error !== null && "code" in error) {
+      const errorObj = error as Record<string, unknown>;
       return {
-        code: (error as any).code as ErrorCode,
-        message: (error as any).message || String(error),
-        isRetryable: (error as any).isRetryable || false,
+        code: (errorObj.code as ErrorCode) || "UNKNOWN_ERROR",
+        message: (errorObj.message as string) || String(error),
+        isRetryable: (errorObj.isRetryable as boolean) || false,
       };
     }
 

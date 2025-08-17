@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { createSupabaseServerInstance } from "../../../db/supabase.client.ts";
 import { LoginSchema } from "../../../lib/validation/auth-schemas.ts";
 import { handleAuthError, handleValidationError, handleServerError } from "../../../lib/utils/auth-errors.ts";
+import { ZodError } from "zod";
 
 export const prerender = false;
 
@@ -46,7 +47,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     );
   } catch (error) {
     if (error instanceof Error && error.name === "ZodError") {
-      return handleValidationError(error as any);
+      return handleValidationError(error as ZodError);
     }
     return handleServerError(error);
   }

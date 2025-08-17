@@ -76,9 +76,7 @@ export function handleValidationError(error: ZodError): Response {
   );
 }
 
-export function handleServerError(error: unknown): Response {
-  console.error("Server error:", error);
-
+export function handleServerError(): Response {
   return new Response(
     JSON.stringify({
       success: false,

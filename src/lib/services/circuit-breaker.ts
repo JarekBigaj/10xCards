@@ -243,7 +243,7 @@ export class CircuitBreaker {
     }
 
     // Log state change (in production, use proper logging)
-    console.log(`Circuit breaker: ${fromState} → ${newState} (${reason})`);
+    // console.log(`Circuit breaker: ${fromState} → ${newState} (${reason})`);
   }
 
   /**

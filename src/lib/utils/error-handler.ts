@@ -84,17 +84,8 @@ export function isRetryable(error: unknown): boolean {
 }
 
 // Log error for monitoring
-export function logError(error: unknown, context?: string) {
+export function logError(error: unknown) {
   const flashcardError = handleFlashcardApiError(error);
-
-  console.error(`FlashcardError [${flashcardError.code}]${context ? ` in ${context}` : ""}:`, {
-    message: flashcardError.message,
-    code: flashcardError.code,
-    statusCode: flashcardError.statusCode,
-    isRetryable: flashcardError.isRetryable,
-    originalError: error,
-    timestamp: new Date().toISOString(),
-  });
 
   // In production, send to monitoring service
   if (typeof window !== "undefined" && window.gtag) {

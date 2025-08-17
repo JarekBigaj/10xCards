@@ -67,6 +67,7 @@ export function FlashcardProvider({ children, initialFlashcards, initialStats }:
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to refresh flashcards";
       setError(errorMessage);
+      // eslint-disable-next-line no-console
       console.error("Failed to refresh flashcards:", error);
     } finally {
       setIsLoading(false);
@@ -89,6 +90,7 @@ export function FlashcardProvider({ children, initialFlashcards, initialStats }:
         throw new Error(data.error || "Failed to load stats");
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error("Failed to refresh stats:", error);
       // Don't set error for stats as they're not critical
     }

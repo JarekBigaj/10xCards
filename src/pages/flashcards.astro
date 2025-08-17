@@ -42,7 +42,12 @@ try {
     initialStats = statsData.data.stats;
   }
 } catch (error) {
-  console.error("Failed to pre-load flashcards:", error);
+  // Silently handle errors - they will be handled by the client-side components
+  // Log error details in development only
+  if (import.meta.env.DEV) {
+    // eslint-disable-next-line no-console
+    console.error("Failed to pre-load flashcards:", error);
+  }
 }
 
 const userData = {
@@ -58,7 +63,7 @@ const userData = {
 
   <FlashcardProvider initialFlashcards={initialFlashcards} initialStats={initialStats} client:load>
     <FlashcardsErrorBoundary client:load>
-      <FlashcardsView user={userData} initialFlashcards={initialFlashcards} initialStats={initialStats} client:load />
+      <FlashcardsView initialFlashcards={initialFlashcards} initialStats={initialStats} client:load />
     </FlashcardsErrorBoundary>
   </FlashcardProvider>
 </Layout>

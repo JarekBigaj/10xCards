@@ -13,7 +13,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
       return authResult.error;
     }
 
-    const { user, userId } = authResult;
+    const { userId } = authResult;
 
     const supabase = createSupabaseServerInstance({
       cookies,
@@ -28,7 +28,6 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
       .eq("is_deleted", false);
 
     if (flashcardsError) {
-      console.error("Error deleting user flashcards:", flashcardsError);
       // Continue with account deletion even if flashcards deletion fails
     }
 
@@ -40,7 +39,6 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
       .eq("is_deleted", false);
 
     if (reviewsError) {
-      console.error("Error deleting user reviews:", reviewsError);
       // Continue with account deletion even if reviews deletion fails
     }
 
@@ -49,7 +47,6 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     const { error: signOutError } = await supabase.auth.signOut();
 
     if (signOutError) {
-      console.error("Error signing out:", signOutError);
       return handleAuthError(signOutError);
     }
 
@@ -64,7 +61,6 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
       }
     );
   } catch (error) {
-    console.error("Error deleting account:", error);
     return handleServerError(error);
   }
 };

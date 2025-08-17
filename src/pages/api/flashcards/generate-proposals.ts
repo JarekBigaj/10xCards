@@ -120,7 +120,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Generate flashcard proposals using AI service
     try {
-      const result = await flashcardService.generateFlashcardProposals(validatedData, userId);
+      const result = await flashcardService.generateFlashcardProposals(validatedData);
 
       const response: ApiResponse<{
         proposals: GeneratedFlashcard[];
@@ -227,8 +227,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
   } catch (error) {
-    console.error("Error in generate-proposals endpoint:", error);
-
     return new Response(
       JSON.stringify({
         success: false,
@@ -236,7 +234,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         details: [
           {
             code: "UNKNOWN",
-            message: "An unexpected error occurred",
+            message: "An unexpected error occurred" + error,
           },
         ],
       } as ErrorResponse),

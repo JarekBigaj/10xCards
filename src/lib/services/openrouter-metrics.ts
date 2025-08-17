@@ -107,7 +107,7 @@ export class OpenRouterMetricsCollector {
   /**
    * Record circuit breaker state change
    */
-  recordCircuitBreakerChange(from: CircuitBreakerState, to: CircuitBreakerState): void {
+  recordCircuitBreakerChange(): void {
     // This would typically be stored in a more persistent way
     // For now, we'll just track it in memory
   }
@@ -115,14 +115,14 @@ export class OpenRouterMetricsCollector {
   /**
    * Record cache operation
    */
-  recordCacheOperation(hit: boolean): void {
+  recordCacheOperation(): void {
     // Cache metrics would be tracked here
   }
 
   /**
    * Record retry attempt
    */
-  recordRetryAttempt(attempt: number): void {
+  recordRetryAttempt(): void {
     // Retry metrics would be tracked here
   }
 
@@ -273,6 +273,7 @@ export class OpenRouterMetricsCollector {
    */
   reset(): void {
     this.requestTimes.length = 0;
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     Object.keys(this.errorCounts).forEach((key) => delete this.errorCounts[key]);
     this.lastRequestCount = 0;
     this.lastRequestTime = Date.now();

@@ -95,9 +95,6 @@ export function handleServiceError(error: Error): { response: Response; statusCo
       return createDuplicateErrorResponse("front_text", "Another flashcard with identical front text exists");
 
     default:
-      // Log unexpected errors for debugging
-      console.error("Unhandled service error:", error);
-
       // Check for database-related errors
       if (
         message.includes("Failed to update") ||

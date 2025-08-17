@@ -39,7 +39,7 @@ export const DELETE: APIRoute = async ({ request, locals }) => {
     } catch (_error) {
       const errorResponse: ErrorResponse = {
         success: false,
-        error: "Invalid JSON in request body",
+        error: "Invalid JSON in request body" + _error,
       };
       return new Response(JSON.stringify(errorResponse), {
         status: 400,
@@ -82,8 +82,6 @@ export const DELETE: APIRoute = async ({ request, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Error in DELETE /api/flashcards/bulk:", error);
-
     // Handle specific error types
     let errorMessage = "Internal server error";
     const statusCode = 500;
@@ -126,7 +124,7 @@ export const PUT: APIRoute = async ({ request, locals }) => {
     } catch (_error) {
       const errorResponse: ErrorResponse = {
         success: false,
-        error: "Invalid JSON in request body",
+        error: "Invalid JSON in request body" + _error,
       };
       return new Response(JSON.stringify(errorResponse), {
         status: 400,
@@ -175,8 +173,6 @@ export const PUT: APIRoute = async ({ request, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Error in PUT /api/flashcards/bulk:", error);
-
     // Handle specific error types
     let errorMessage = "Internal server error";
     const statusCode = 500;

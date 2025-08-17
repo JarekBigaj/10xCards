@@ -51,8 +51,7 @@ export const PUT: APIRoute = async ({ request, params, locals }) => {
     try {
       requestBody = await request.json();
     } catch (_error) {
-      console.error("Error parsing request body in PUT /api/flashcards/[id]:", _error);
-      return createValidationErrorResponse("Invalid JSON in request body", []).response;
+      return createValidationErrorResponse("Invalid JSON in request body" + _error, []).response;
     }
 
     // Validate request body
@@ -103,8 +102,6 @@ export const PUT: APIRoute = async ({ request, params, locals }) => {
       throw serviceError;
     }
   } catch (error) {
-    console.error("Error in PUT /api/flashcards/[id]:", error);
-
     // Handle unexpected errors using centralized error handler
     if (error instanceof Error) {
       return handleServiceError(error).response;
@@ -174,8 +171,6 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
       throw serviceError;
     }
   } catch (error) {
-    console.error("Error in DELETE /api/flashcards/[id]:", error);
-
     // Handle unexpected errors using centralized error handler
     if (error instanceof Error) {
       return handleServiceError(error).response;

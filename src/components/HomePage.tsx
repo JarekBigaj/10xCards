@@ -14,6 +14,7 @@ interface HomePageProps {
 export function HomePage({ user }: HomePageProps) {
   // Dla zalogowanych użytkowników - przekierowanie do dashboard
   if (user) {
+    // eslint-disable-next-line react-compiler/react-compiler
     window.location.href = "/dashboard";
     return null;
   }
@@ -256,15 +257,9 @@ export function HomePage({ user }: HomePageProps) {
             </div>
 
             <div className="flex space-x-6 text-sm text-muted-foreground">
-              <a href="#" className="hover:text-foreground transition-colors">
-                Polityka prywatności
-              </a>
-              <a href="#" className="hover:text-foreground transition-colors">
-                Regulamin
-              </a>
-              <a href="#" className="hover:text-foreground transition-colors">
-                Kontakt
-              </a>
+              <button className="hover:text-foreground transition-colors">Polityka prywatności</button>
+              <button className="hover:text-foreground transition-colors">Regulamin</button>
+              <button className="hover:text-foreground transition-colors">Kontakt</button>
             </div>
 
             <p className="text-sm text-muted-foreground">© 2024 10xCards. Wszystkie prawa zastrzeżone.</p>

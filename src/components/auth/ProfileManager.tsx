@@ -23,8 +23,10 @@ export function ProfileManager({ user }: ProfileManagerProps) {
       // This would call a resend confirmation email endpoint
       // For now, we'll just show an alert
       alert("Email potwierdzający został wysłany ponownie. Sprawdź swoją skrzynkę.");
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      console.error("Error resending confirmation:", error);
+      // Log error for debugging (in production, use proper error logging service)
+      // console.error("Error resending confirmation:", error);
       alert("Wystąpił błąd podczas wysyłania emaila. Spróbuj ponownie.");
     }
   };
@@ -113,7 +115,6 @@ export function ProfileManager({ user }: ProfileManagerProps) {
         onClose={() => setShowChangePassword(false)}
         onSuccess={() => {
           // Could show a success toast or refresh data
-          console.log("Password changed successfully");
         }}
       />
 

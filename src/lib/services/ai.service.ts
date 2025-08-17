@@ -85,16 +85,11 @@ export class AiService {
     // Default to using OpenRouter instead of mocks
     this.useMockData = false; // Use real OpenRouter service
 
-    console.log("AiService constructor - useMockData:", this.useMockData);
-    console.log("AiService constructor - apiKey:", apiKey ? "PROVIDED" : "NOT_PROVIDED");
-
     if (this.useMockData) {
       // Create mock service for testing/fallback
-      console.log("Creating mock OpenRouter service");
       this.openRouterService = createOpenRouterService(apiKey, true);
     } else {
       // Create real OpenRouter service
-      console.log("Creating real OpenRouter service");
       this.openRouterService = createOpenRouterService(apiKey, false);
     }
   }
@@ -108,14 +103,8 @@ export class AiService {
   ): Promise<{ candidates: AiCandidate[]; metadata: GenerationMetadata }> {
     const startTime = Date.now();
 
-    console.log("AiService.generateCandidates - useMockData:", this.useMockData);
-    console.log("AiService.generateCandidates - text length:", text.length);
-
     try {
       // TEMPORARY: Force fallback to mock data if OpenRouter fails
-      if (!this.useMockData) {
-        console.log("TEMPORARY: Attempting OpenRouter, but will fallback to mock on any error");
-      }
       let candidates: {
         front_text: string;
         back_text: string;
@@ -144,13 +133,11 @@ export class AiService {
 
         // Verify topic length is within limits
         if (request.topic.length > 200) {
-          console.error("ERROR: Generated topic exceeds 200 characters:", request.topic.length);
           throw new Error(`Generated topic is too long: ${request.topic.length} characters (max 200)`);
         }
 
         // Verify additional_context length is within limits
         if (request.additional_context && request.additional_context.length > 1000) {
-          console.error("ERROR: Additional context exceeds 1000 characters:", request.additional_context.length);
           throw new Error(`Additional context is too long: ${request.additional_context.length} characters (max 1000)`);
         }
 
@@ -186,12 +173,8 @@ export class AiService {
 
       return { candidates: candidatesWithIds, metadata };
     } catch (error) {
-      console.error("AiService.generateCandidates - Error occurred:", error);
-      console.log("AiService.generateCandidates - Current useMockData:", this.useMockData);
-
       // Handle retryable errors
       if (this.isRetryableError(error) && retryCount < MAX_RETRY_ATTEMPTS) {
-        console.log("AiService.generateCandidates - Retrying due to retryable error");
         const delay = this.calculateRetryDelay(retryCount);
         await this.sleep(delay);
         return this.generateCandidates(text, retryCount + 1);
@@ -199,13 +182,13 @@ export class AiService {
 
       // If OpenRouter fails and we're not already using mocks, fallback to mocks
       if (!this.useMockData && this.shouldFallbackToMock(error)) {
-        console.warn("OpenRouter service failed, falling back to mock data:", error);
+        // console.warn("OpenRouter service failed, falling back to mock data:", error);
         this.useMockData = true;
         return this.generateCandidates(text, retryCount);
       }
 
       // Convert error to AiServiceError
-      console.error("AiService.generateCandidates - Converting to AiServiceError");
+      // console.error("AiService.generateCandidates - Converting to AiServiceError");
       const aiError = this.convertToAiServiceError(error);
       throw aiError;
     }
@@ -219,9 +202,6 @@ export class AiService {
     retryCount = 0
   ): Promise<{ candidates: AiCandidate[]; metadata: GenerationMetadata }> {
     const startTime = Date.now();
-
-    console.log("AiService.generateCustomCandidates - useMockData:", this.useMockData);
-    console.log("AiService.generateCustomCandidates - request:", request);
 
     try {
       let candidates: {
@@ -269,12 +249,8 @@ export class AiService {
 
       return { candidates: candidatesWithIds, metadata };
     } catch (error) {
-      console.error("AiService.generateCustomCandidates - Error occurred:", error);
-      console.log("AiService.generateCustomCandidates - Current useMockData:", this.useMockData);
-
       // Handle retryable errors
       if (this.isRetryableError(error) && retryCount < MAX_RETRY_ATTEMPTS) {
-        console.log("AiService.generateCustomCandidates - Retrying due to retryable error");
         const delay = this.calculateRetryDelay(retryCount);
         await this.sleep(delay);
         return this.generateCustomCandidates(request, retryCount + 1);
@@ -282,7 +258,7 @@ export class AiService {
 
       // If OpenRouter fails and we're not already using mocks, fallback to mocks
       if (!this.useMockData && this.shouldFallbackToMock(error)) {
-        console.warn("OpenRouter service failed, falling back to mock data:", error);
+        // console.warn("OpenRouter service failed, falling back to mock data:", error);
         this.useMockData = true;
         return this.generateCustomCandidates(request, retryCount);
       }
@@ -341,8 +317,6 @@ export class AiService {
       const index = (hashNum + i) % MOCK_CANDIDATES.length;
       const mockCandidate = MOCK_CANDIDATES[index];
 
-      console.log("Mock candidate at index", index, ":", mockCandidate);
-
       selectedCandidates.push({
         ...mockCandidate,
         // Slightly vary confidence based on text characteristics
@@ -351,11 +325,8 @@ export class AiService {
         difficulty: mockCandidate.difficulty,
         category: mockCandidate.category || "General", // Ensure category is always a string
       });
-
-      console.log("Candidate after processing:", selectedCandidates[selectedCandidates.length - 1]);
     }
 
-    console.log("Selected candidates:", selectedCandidates);
     return selectedCandidates;
   }
 
@@ -397,8 +368,6 @@ export class AiService {
   private shouldFallbackToMock(error: unknown): boolean {
     const errorMessage = error instanceof Error ? error.message : String(error);
 
-    console.log("shouldFallbackToMock - errorMessage:", errorMessage);
-
     // Fallback for critical errors that make OpenRouter unusable
     const shouldFallback =
       errorMessage?.includes("API key") ||
@@ -409,7 +378,6 @@ export class AiService {
       errorMessage?.includes("Invalid response") ||
       errorMessage?.includes("parse");
 
-    console.log("shouldFallbackToMock - result:", shouldFallback);
     return shouldFallback;
   }
 

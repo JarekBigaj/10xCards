@@ -72,9 +72,6 @@ export class OpenRouterService {
     const startTime = Date.now();
     this.requestCount++;
 
-    console.log("OpenRouterService.generateFlashcards - Starting");
-    console.log("OpenRouterService.generateFlashcards - API Key:", this.apiKey ? "PROVIDED" : "NOT_PROVIDED");
-
     try {
       // Validate input request
       this.validateFlashcardRequest(request);
@@ -137,7 +134,6 @@ export class OpenRouterService {
         },
       };
     } catch (error) {
-      console.error("OpenRouterService.generateFlashcards - Error occurred:", error);
       this.circuitBreaker.onFailure();
       this.lastError = error instanceof Error ? error.message : String(error);
       throw this.convertToOpenRouterError(error);
@@ -260,10 +256,6 @@ export class OpenRouterService {
    */
   private parseStructuredResponse(response: string, schema: JSONSchema): { flashcards: GeneratedFlashcard[] } {
     try {
-      // Log the raw response for debugging
-      console.log("Raw OpenRouter response:", response);
-      console.log("Response length:", response.length);
-
       // Extract JSON from response with improved parsing
       let jsonString = response.trim();
 
@@ -286,8 +278,6 @@ export class OpenRouterService {
       }
 
       if (startIndex === -1) {
-        console.error("No JSON start found in response");
-        console.error("Response content:", response);
         throw new Error("No valid JSON found in response");
       }
 
@@ -307,26 +297,20 @@ export class OpenRouterService {
       }
 
       if (endIndex === -1) {
-        console.error("No matching JSON end found");
-        console.error("Response content:", response);
         throw new Error("Incomplete JSON in response");
       }
 
       const extractedJson = jsonString.substring(startIndex, endIndex + 1);
-      console.log("Extracted JSON string:", extractedJson);
 
       const parsedData = JSON.parse(extractedJson);
-      console.log("Parsed data:", parsedData);
 
       // Handle both formats: direct array or object with flashcards property
       let normalizedData;
       if (Array.isArray(parsedData)) {
         // OpenRouter returned array directly, wrap it in expected format
-        console.log("OpenRouter returned array directly, wrapping in flashcards object");
         normalizedData = { flashcards: parsedData };
       } else if (parsedData && typeof parsedData === "object" && "flashcards" in parsedData) {
         // OpenRouter returned expected object format
-        console.log("OpenRouter returned expected object format");
         normalizedData = parsedData;
       } else {
         throw new Error("Invalid response format: expected array or object with flashcards property");
@@ -337,8 +321,6 @@ export class OpenRouterService {
 
       return normalizedData;
     } catch (error) {
-      console.error("Error parsing OpenRouter response:", error);
-      console.error("Response was:", response);
       throw OpenRouterErrorFactory.createNonRetryableError(
         "VALIDATION_ERROR",
         `Failed to parse structured response: ${error instanceof Error ? error.message : "Unknown error"}`

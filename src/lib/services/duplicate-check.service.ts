@@ -185,7 +185,6 @@ export async function checkDuplicate(
       duplicate_type: "none",
     };
   } catch (error) {
-    console.error("Error in checkDuplicate service:", error);
-    throw new Error("Failed to check for duplicates");
+    throw new Error("Failed to check for duplicates" + error);
   }
 }

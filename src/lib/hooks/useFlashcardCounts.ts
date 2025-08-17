@@ -39,7 +39,6 @@ export function useFlashcardCounts() {
           throw new Error(data.error || "Failed to load stats");
         }
       } catch (error) {
-        console.error("Failed to fetch flashcard counts:", error);
         setCounts((prev) => ({
           ...prev,
           loading: false,

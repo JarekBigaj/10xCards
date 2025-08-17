@@ -25,8 +25,8 @@ export class FlashcardsErrorBoundary extends Component<FlashcardsErrorBoundaryPr
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({ errorInfo });
 
-    // Log error to monitoring service
-    console.error("FlashcardsErrorBoundary caught an error:", error, errorInfo);
+    // Log error to monitoring service (in production, use proper error logging service)
+    // console.error("FlashcardsErrorBoundary caught an error:", error, errorInfo);
 
     // In production, send to error tracking service
     if (typeof window !== "undefined" && window.gtag) {

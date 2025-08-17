@@ -28,14 +28,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
     try {
       requestBody = await request.json();
     } catch (parseError) {
-      console.error("JSON parsing error:", parseError);
       const errorResponse: ErrorResponse = {
         success: false,
         error: "Invalid JSON in request body",
         details: [
           {
             code: "VALIDATION_ERROR",
-            message: "Request body must be valid JSON",
+            message: "Request body must be valid JSON" + parseError,
           },
         ],
       };
@@ -95,8 +94,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Error in check-duplicate endpoint:", error);
-
     // Handle specific database errors
     if (error instanceof Error) {
       if (error.message.includes("Database error")) {

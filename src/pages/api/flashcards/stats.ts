@@ -37,8 +37,6 @@ export const GET: APIRoute = async ({ locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Error in GET /api/flashcards/stats:", error);
-
     // Handle specific error types
     let errorMessage = "Internal server error";
     let statusCode = 500;

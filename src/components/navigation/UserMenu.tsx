@@ -30,12 +30,11 @@ export function UserMenu({ user }: UserMenuProps) {
       if (response.ok) {
         window.location.href = "/";
       } else {
-        console.error("Logout failed");
         // Fallback - force redirect even if API fails
         window.location.href = "/";
       }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      console.error("Logout error:", error);
       // Fallback - force redirect
       window.location.href = "/";
     }

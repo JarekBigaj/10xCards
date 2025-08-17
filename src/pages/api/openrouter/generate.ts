@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { createOpenRouterService } from "../../../lib/services/openrouter.service";
 import type { FlashcardGenerationRequest } from "../../../types";
 
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = async ({ request }) => {
   try {
     // Get API key from environment or request headers
     const apiKey = import.meta.env.OPENROUTER_API_KEY || request.headers.get("x-api-key");
@@ -94,8 +94,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       }
     );
   } catch (error) {
-    console.error("Error generating flashcards:", error);
-
     // Handle specific OpenRouter errors
     if (error && typeof error === "object" && "code" in error) {
       const openRouterError = error as { code: string; message: string; isRetryable?: boolean };

@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { createOpenRouterService } from "../../../lib/services/openrouter.service";
 
-export const GET: APIRoute = async ({ request, cookies }) => {
+export const GET: APIRoute = async ({ request }) => {
   try {
     // Get API key from environment or request headers
     const apiKey = import.meta.env.OPENROUTER_API_KEY || request.headers.get("x-api-key");
@@ -47,8 +47,6 @@ export const GET: APIRoute = async ({ request, cookies }) => {
       }
     );
   } catch (error) {
-    console.error("Error getting OpenRouter status:", error);
-
     return new Response(
       JSON.stringify({
         success: false,

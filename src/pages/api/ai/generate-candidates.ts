@@ -19,13 +19,6 @@ export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    console.log("🚀 [generate-candidates] Starting request");
-    console.log(
-      "🔑 [generate-candidates] OPENROUTER_API_KEY:",
-      import.meta.env.OPENROUTER_API_KEY ? "PROVIDED" : "NOT_PROVIDED"
-    );
-    console.log("👤 [generate-candidates] User ID:", locals.user?.id || "anonymous-user");
-
     // Parse request body
     let requestBody: unknown;
     try {
@@ -269,8 +262,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
   } catch (error) {
-    console.error("Error in generate-candidates endpoint:", error);
-
     return new Response(
       JSON.stringify({
         success: false,
@@ -278,7 +269,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         details: [
           {
             code: "UNKNOWN",
-            message: "An unexpected error occurred",
+            message: "An unexpected error occurred" + error,
           },
         ],
       } as ErrorResponse),

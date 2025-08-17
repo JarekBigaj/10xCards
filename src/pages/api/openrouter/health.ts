@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { createOpenRouterMetricsCollector } from "../../../lib/services/openrouter-metrics";
 
-export const GET: APIRoute = async ({ request, cookies }) => {
+export const GET: APIRoute = async () => {
   try {
     // Create metrics collector
     const metricsCollector = createOpenRouterMetricsCollector();
@@ -46,8 +46,6 @@ export const GET: APIRoute = async ({ request, cookies }) => {
       }
     );
   } catch (error) {
-    console.error("Error performing health check:", error);
-
     return new Response(
       JSON.stringify({
         success: false,

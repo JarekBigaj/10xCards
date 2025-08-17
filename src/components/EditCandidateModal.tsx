@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "./ui/button";
 import type { CandidateWithStatus } from "../lib/hooks/useGenerateFlashcards";
 
@@ -30,23 +30,7 @@ export function EditCandidateModal({ isOpen, candidate, onSave, onCancel }: Edit
     }
   }, [candidate]);
 
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isOpen) return;
-
-      if (e.key === "Escape") {
-        onCancel();
-      } else if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-        handleSave();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onCancel]);
-
-  const validateForm = () => {
+  const validateForm = useCallback(() => {
     const newErrors: { frontText?: string; backText?: string } = {};
 
     if (!formData.frontText.trim()) {
@@ -63,9 +47,9 @@ export function EditCandidateModal({ isOpen, candidate, onSave, onCancel }: Edit
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+  }, [formData.frontText, formData.backText]);
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     if (!candidate || !validateForm()) return;
 
     const updatedCandidate: CandidateWithStatus = {
@@ -76,7 +60,23 @@ export function EditCandidateModal({ isOpen, candidate, onSave, onCancel }: Edit
     };
 
     onSave(updatedCandidate);
-  };
+  }, [candidate, validateForm, formData.frontText, formData.backText, onSave]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isOpen) return;
+
+      if (e.key === "Escape") {
+        onCancel();
+      } else if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+        handleSave();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [handleSave, isOpen, onCancel]);
 
   const handleInputChange = (field: "frontText" | "backText", value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));

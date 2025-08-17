@@ -58,9 +58,10 @@ export const onRequest = defineMiddleware(async ({ locals, cookies, url, request
       locals.session = null;
     }
   } catch (error) {
-    console.error("Auth middleware error:", error);
     locals.user = null;
     locals.session = null;
+    // eslint-disable-next-line no-console
+    console.error("Error in middleware:", error);
   }
 
   // For public paths, continue regardless of auth status

@@ -45,8 +45,10 @@ export function DeleteAccountModal({ isOpen, onClose, userEmail }: DeleteAccount
       // Success - redirect to home page
       alert("Konto zostało usunięte pomyślnie. Zostaniesz przekierowany na stronę główną.");
       window.location.href = "/";
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      console.error("Delete account error:", error);
+      // Log error for debugging (in production, use proper error logging service)
+      // console.error("Delete account error:", error);
       setError("Błąd połączenia. Spróbuj ponownie.");
     } finally {
       setIsLoading(false);

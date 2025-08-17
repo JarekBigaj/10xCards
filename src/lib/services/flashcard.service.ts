@@ -73,7 +73,6 @@ export class FlashcardService {
       const { data, error, count } = await supabaseQuery;
 
       if (error) {
-        console.error("Database error in getFlashcards:", error);
         throw new Error(`Failed to fetch flashcards: ${error.message}`);
       }
 
@@ -100,7 +99,6 @@ export class FlashcardService {
         pagination,
       };
     } catch (error) {
-      console.error("Error in FlashcardService.getFlashcards:", error);
       if (error instanceof Error) {
         throw error;
       }
@@ -188,7 +186,6 @@ export class FlashcardService {
       const { data, error, count } = await supabaseQuery;
 
       if (error) {
-        console.error("Database error in getFlashcardsExtended:", error);
         throw new Error(`Failed to fetch flashcards: ${error.message}`);
       }
 
@@ -215,7 +212,6 @@ export class FlashcardService {
         pagination,
       };
     } catch (error) {
-      console.error("Error in FlashcardService.getFlashcardsExtended:", error);
       if (error instanceof Error) {
         throw error;
       }
@@ -246,7 +242,6 @@ export class FlashcardService {
       .limit(1);
 
     if (error) {
-      console.error("Error checking duplicate:", error);
       throw new Error(`Failed to check for duplicates: ${error.message}`);
     }
 
@@ -295,13 +290,11 @@ export class FlashcardService {
       const { data, error } = await this.supabase.from("flashcards").insert(insertData).select().single();
 
       if (error) {
-        console.error("Database error in createFlashcard:", error);
         throw new Error(`Failed to create flashcard: ${error.message}`);
       }
 
       return this.transformToDto(data);
     } catch (error) {
-      console.error("Error in FlashcardService.createFlashcard:", error);
       if (error instanceof Error && error.message === "DUPLICATE") {
         throw error;
       }
@@ -351,8 +344,7 @@ export class FlashcardService {
         flashcards: results,
         errors,
       };
-    } catch (error) {
-      console.error("Error in FlashcardService.createFlashcards:", error);
+    } catch {
       throw new Error("Failed to process flashcard creation batch");
     }
   }
@@ -371,19 +363,15 @@ export class FlashcardService {
         .single();
 
       if (error) {
-        console.log(`Database error in getFlashcardById:`, error);
         if (error.code === "PGRST116") {
           // No rows returned
-          console.log(`No flashcard found with ID: ${flashcardId}`);
           return null;
         }
-        console.error("Database error in getFlashcardById:", error);
         throw new Error(`Failed to fetch flashcard: ${error.message}`);
       }
 
       return this.transformToDto(data);
     } catch (error) {
-      console.error("Error in FlashcardService.getFlashcardById:", error);
       if (error instanceof Error) {
         throw error;
       }
@@ -409,7 +397,6 @@ export class FlashcardService {
       .limit(1);
 
     if (error) {
-      console.error("Error checking duplicate excluding ID:", error);
       throw new Error(`Failed to check for duplicates: ${error.message}`);
     }
 
@@ -473,13 +460,11 @@ export class FlashcardService {
         .single();
 
       if (error) {
-        console.error("Database error in updateFlashcard:", error);
         throw new Error(`Failed to update flashcard: ${error.message}`);
       }
 
       return this.transformToDto(data);
     } catch (error) {
-      console.error("Error in FlashcardService.updateFlashcard:", error);
       if (error instanceof Error && (error.message === "NOT_FOUND" || error.message === "DUPLICATE")) {
         throw error;
       }
@@ -492,14 +477,11 @@ export class FlashcardService {
    */
   async deleteFlashcard(command: DeleteFlashcardCommand): Promise<void> {
     try {
-      console.log(`Attempting to delete flashcard: ${command.id} for user: ${command.user_id}`);
-
       // Using authenticated client with RLS policies
 
       // First check if flashcard exists and belongs to user (like in bulk delete)
       const existingFlashcard = await this.getFlashcardById(command.id, command.user_id);
       if (!existingFlashcard) {
-        console.log(`No flashcard found or already deleted: ${command.id}`);
         throw new Error("NOT_FOUND");
       }
 
@@ -512,18 +494,9 @@ export class FlashcardService {
         .eq("is_deleted", false); // Only update if not already deleted
 
       if (error) {
-        console.error("Database error in deleteFlashcard:", error);
-        console.error("Error details:", JSON.stringify(error, null, 2));
         throw new Error(`Failed to delete flashcard: ${error.message}`);
       }
-
-      // Log successful deletion for audit purposes
-      console.log(`Flashcard deleted successfully: ${command.id} by user: ${command.user_id}`);
     } catch (error) {
-      console.error("Error in FlashcardService.deleteFlashcard:", error);
-      console.error("Error type:", error instanceof Error ? "Error" : typeof error);
-      console.error("Error message:", error instanceof Error ? error.message : error);
-
       if (error instanceof Error && error.message === "NOT_FOUND") {
         throw error;
       }
@@ -562,8 +535,6 @@ export class FlashcardService {
         },
       };
     } catch (error) {
-      console.error("Error in FlashcardService.generateFlashcardProposals:", error);
-
       // If AI service fails, throw a user-friendly error
       if (error instanceof Error) {
         throw new Error(`Failed to generate flashcard proposals: ${error.message}`);
@@ -596,16 +567,8 @@ export class FlashcardService {
     // Generate a concise topic from the text (max 200 chars for OpenRouter)
     const topic = this.generateTopicFromText(text);
 
-    // Log the generated topic for debugging (only in development)
-    if (import.meta.env.DEV) {
-      console.log("Generated topic length:", topic.length);
-      console.log("Generated topic:", topic);
-      console.log("Full text length:", text.length);
-    }
-
     // Verify topic length is within limits
     if (topic.length > 200) {
-      console.error("ERROR: Generated topic exceeds 200 characters:", topic.length);
       throw new Error(`Generated topic is too long: ${topic.length} characters (max 200)`);
     }
 
@@ -616,14 +579,7 @@ export class FlashcardService {
 
     // Verify additional_context length is within limits
     if (additionalContext.length > 1000) {
-      console.error("ERROR: Additional context exceeds 1000 characters:", additionalContext.length);
-      throw new Error(`Additional context is too long: ${additionalContext.length} characters (max 1000)`);
-    }
-
-    // Log additional context for debugging (only in development)
-    if (import.meta.env.DEV) {
-      console.log("Additional context length:", additionalContext.length);
-      console.log("Additional context preview:", additionalContext.substring(0, 100) + "...");
+      throw new Error(`Additional context exceeds 1000 characters: ${additionalContext.length} characters (max 1000)`);
     }
 
     const request: FlashcardGenerationRequest = {
@@ -731,7 +687,6 @@ export class FlashcardService {
             .eq("is_deleted", false);
 
           if (error) {
-            console.error(`Database error in bulk delete for flashcard ${flashcardId}:`, error);
             results.failed_count++;
             results.errors.push({
               flashcard_id: flashcardId,
@@ -742,7 +697,6 @@ export class FlashcardService {
             results.deleted_count++;
           }
         } catch (error) {
-          console.error(`Error deleting flashcard ${flashcardId}:`, error);
           results.failed_count++;
           results.errors.push({
             flashcard_id: flashcardId,
@@ -753,8 +707,7 @@ export class FlashcardService {
       }
 
       return results;
-    } catch (error) {
-      console.error("Error in FlashcardService.bulkDeleteFlashcards:", error);
+    } catch {
       throw new Error("Failed to process bulk delete operation");
     }
   }
@@ -793,7 +746,6 @@ export class FlashcardService {
           results.updated_count++;
           results.flashcards.push(updatedFlashcard);
         } catch (error) {
-          console.error(`Error updating flashcard ${update.id}:`, error);
           results.failed_count++;
 
           let errorCode: BulkOperationError["code"] = "VALIDATION_ERROR";
@@ -820,8 +772,7 @@ export class FlashcardService {
       }
 
       return results;
-    } catch (error) {
-      console.error("Error in FlashcardService.bulkUpdateFlashcards:", error);
+    } catch {
       throw new Error("Failed to process bulk update operation");
     }
   }
@@ -843,7 +794,6 @@ export class FlashcardService {
         .eq("is_deleted", false);
 
       if (error) {
-        console.error("Database error in getFlashcardStats:", error);
         throw new Error(`Failed to fetch flashcard statistics: ${error.message}`);
       }
 
@@ -938,7 +888,6 @@ export class FlashcardService {
 
       return stats;
     } catch (error) {
-      console.error("Error in FlashcardService.getFlashcardStats:", error);
       if (error instanceof Error) {
         throw error;
       }

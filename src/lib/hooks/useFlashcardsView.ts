@@ -7,7 +7,6 @@ import type {
   BulkDeleteRequest,
   CreateFlashcardRequest,
   UpdateFlashcardRequest,
-  BulkDeleteResponse,
   FlashcardResponse,
 } from "../../types";
 
@@ -166,8 +165,9 @@ export function useFlashcardsView(initialFlashcards?: FlashcardDto[], initialSta
         ...prev,
         stats: data.data.stats,
       }));
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      console.error("Failed to load stats:", error);
+      // Handle error silently for stats loading
     }
   }, []);
 

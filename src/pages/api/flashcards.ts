@@ -95,8 +95,6 @@ export const GET: APIRoute = async ({ request, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Error in GET /api/flashcards:", error);
-
     // Handle specific error types
     let errorMessage = "Internal server error";
     let statusCode = 500;
@@ -145,9 +143,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     } catch (_error) {
       const errorResponse: ErrorResponse = {
         success: false,
-        error: "Invalid JSON in request body",
+        error: "Invalid JSON in request body" + _error,
       };
-      console.error("Error in POST /api/flashcards:", _error);
       return new Response(JSON.stringify(errorResponse), {
         status: 400,
         headers: { "Content-Type": "application/json" },
@@ -263,8 +260,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }
     }
   } catch (error) {
-    console.error("Error in POST /api/flashcards:", error);
-
     // Handle specific error types
     let errorMessage = "Internal server error";
     let statusCode = 500;

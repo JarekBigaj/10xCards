@@ -119,7 +119,7 @@ function PasswordStrength({ password }: { password: string }) {
   );
 }
 
-export function AuthForm({ mode, onSuccess, redirectTo, resetToken }: AuthFormProps) {
+export function AuthForm({ mode, onSuccess, redirectTo: _redirectTo, resetToken }: AuthFormProps) {
   const [formData, setFormData] = useState<AuthFormValues>({
     email: "",
     password: "",
@@ -251,7 +251,7 @@ export function AuthForm({ mode, onSuccess, redirectTo, resetToken }: AuthFormPr
 
       // Przekierowanie po pomyślnej operacji
       if (mode === "login" || mode === "register") {
-        const redirectUrl = redirectTo || "/dashboard";
+        const redirectUrl = _redirectTo || "/dashboard";
         window.location.href = redirectUrl;
       } else if (mode === "forgot-password") {
         setGlobalError(null);
@@ -260,8 +260,10 @@ export function AuthForm({ mode, onSuccess, redirectTo, resetToken }: AuthFormPr
       } else if (mode === "reset-password") {
         window.location.href = "/auth/login?message=password-reset-success";
       }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      console.error("Auth error:", error);
+      // Log error for debugging (in production, use proper error logging service)
+      // console.error("Auth error:", error);
       setGlobalError(AUTH_ERROR_MESSAGES.NETWORK_ERROR);
     } finally {
       setIsLoading(false);

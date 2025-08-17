@@ -100,8 +100,10 @@ export function ChangePasswordModal({ isOpen, onClose, onSuccess }: ChangePasswo
 
       // Show success message (could be replaced with a toast notification)
       alert("Hasło zostało zmienione pomyślnie!");
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      console.error("Change password error:", error);
+      // Log error for debugging (in production, use proper error logging service)
+      // console.error("Change password error:", error);
       setGlobalError("Błąd połączenia. Spróbuj ponownie.");
     } finally {
       setIsLoading(false);
