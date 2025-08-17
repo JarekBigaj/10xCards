@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Button } from "./ui/button";
 import { ResultsHeader } from "./ResultsHeader";
 import { BulkActionsBar } from "./BulkActionsBar";
 import { CandidatesTable } from "./CandidatesTable";
@@ -67,7 +66,12 @@ export function ResultsSection({
       <CandidatesTable
         candidates={candidates}
         onCandidateUpdate={onCandidateUpdate}
-        onEdit={onEditCandidate || (() => {})}
+        onEdit={
+          onEditCandidate ||
+          (() => {
+            /* No-op */
+          })
+        }
         onToggleStatus={(id, status) => {
           onCandidateUpdate(id, { status });
         }}

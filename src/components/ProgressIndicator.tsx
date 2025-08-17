@@ -3,11 +3,10 @@ import type { GenerationMetadata } from "../types";
 
 interface ProgressIndicatorProps {
   progress: GenerationMetadata | null;
-  retryCount: number;
   status: "preparing" | "generating" | "processing" | "complete";
 }
 
-export function ProgressIndicator({ progress, retryCount, status }: ProgressIndicatorProps) {
+export function ProgressIndicator({ progress, status }: ProgressIndicatorProps) {
   const getStatusText = () => {
     switch (status) {
       case "preparing":

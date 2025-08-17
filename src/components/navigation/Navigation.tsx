@@ -1,6 +1,5 @@
 import React from "react";
 import { AuthButton } from "./AuthButton";
-import { UserMenu } from "./UserMenu";
 import { NavigationBadge } from "./NavigationBadge";
 import { useFlashcardCounts } from "../../lib/hooks/useFlashcardCounts";
 

@@ -14,14 +14,11 @@ import type {
   DeleteFlashcardCommand,
   FlashcardGenerationRequest,
   GeneratedFlashcard,
-  BulkDeleteRequest,
   BulkDeleteResponseData,
   BulkUpdateRequest,
   BulkUpdateResponseData,
   BulkOperationError,
   FlashcardStats,
-  FlashcardsBySource,
-  FlashcardsByDifficulty,
 } from "../../types";
 import { generateContentHash } from "./duplicate-check.service";
 import { createAiService } from "./ai.service";
@@ -497,13 +494,22 @@ export class FlashcardService {
     try {
       console.log(`Attempting to delete flashcard: ${command.id} for user: ${command.user_id}`);
 
-      // Using service role client - no need for auth context checks
+      // Using authenticated client with RLS policies
 
-      // Perform soft delete using direct SQL to bypass potential RLS/ORM issues
-      const { data, error } = await this.supabase.rpc("soft_delete_flashcard", {
-        flashcard_id: command.id,
-        user_id_param: command.user_id,
-      });
+      // First check if flashcard exists and belongs to user (like in bulk delete)
+      const existingFlashcard = await this.getFlashcardById(command.id, command.user_id);
+      if (!existingFlashcard) {
+        console.log(`No flashcard found or already deleted: ${command.id}`);
+        throw new Error("NOT_FOUND");
+      }
+
+      // Perform soft delete using update query
+      const { error } = await this.supabase
+        .from("flashcards")
+        .update({ is_deleted: true, updated_at: new Date().toISOString() })
+        .eq("id", command.id)
+        .eq("user_id", command.user_id)
+        .eq("is_deleted", false); // Only update if not already deleted
 
       if (error) {
         console.error("Database error in deleteFlashcard:", error);
@@ -511,15 +517,8 @@ export class FlashcardService {
         throw new Error(`Failed to delete flashcard: ${error.message}`);
       }
 
-      // Check if any rows were affected (RPC returns number of affected rows)
-      const affectedRows = data || 0;
-      if (affectedRows === 0) {
-        console.log(`No flashcard found or already deleted: ${command.id}`);
-        throw new Error("NOT_FOUND");
-      }
-
       // Log successful deletion for audit purposes
-      console.log(`Flashcard deleted successfully: ${command.id} by user: ${command.user_id}`, data);
+      console.log(`Flashcard deleted successfully: ${command.id} by user: ${command.user_id}`);
     } catch (error) {
       console.error("Error in FlashcardService.deleteFlashcard:", error);
       console.error("Error type:", error instanceof Error ? "Error" : typeof error);
@@ -535,10 +534,7 @@ export class FlashcardService {
   /**
    * Generate flashcard proposals using AI service
    */
-  async generateFlashcardProposals(
-    request: FlashcardGenerationRequest,
-    userId: string
-  ): Promise<{
+  async generateFlashcardProposals(request: FlashcardGenerationRequest): Promise<{
     proposals: GeneratedFlashcard[];
     metadata: {
       model_used: string;
@@ -639,7 +635,7 @@ export class FlashcardService {
       retry_count: options?.retry_count || 0,
     };
 
-    return this.generateFlashcardProposals(request, userId);
+    return this.generateFlashcardProposals(request);
   }
 
   /**
@@ -888,7 +884,7 @@ export class FlashcardService {
 
       for (const flashcard of flashcards) {
         // Count by source
-        (stats.by_source as any)[flashcard.source]++;
+        (stats.by_source as unknown as Record<string, number>)[flashcard.source]++;
 
         // Count by difficulty
         if (flashcard.difficulty <= 2) {

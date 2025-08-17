@@ -2,15 +2,12 @@ import { useState, useCallback, useEffect, useMemo } from "react";
 import type {
   FlashcardDto,
   FlashcardStats,
-  ExtendedFlashcardListQuery,
   FlashcardsListResponse,
   FlashcardStatsResponse,
   BulkDeleteRequest,
-  BulkUpdateRequest,
   CreateFlashcardRequest,
   UpdateFlashcardRequest,
   BulkDeleteResponse,
-  BulkUpdateResponse,
   FlashcardResponse,
 } from "../../types";
 
@@ -295,7 +292,7 @@ export function useFlashcardsView(initialFlashcards?: FlashcardDto[], initialSta
           throw new Error("Failed to delete flashcards");
         }
 
-        const data: BulkDeleteResponse = await response.json();
+        await response.json();
 
         setState((prev) => ({
           ...prev,

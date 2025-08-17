@@ -86,7 +86,7 @@ export const DELETE: APIRoute = async ({ request, locals }) => {
 
     // Handle specific error types
     let errorMessage = "Internal server error";
-    let statusCode = 500;
+    const statusCode = 500;
 
     if (error instanceof Error) {
       errorMessage = error.message;
@@ -179,7 +179,7 @@ export const PUT: APIRoute = async ({ request, locals }) => {
 
     // Handle specific error types
     let errorMessage = "Internal server error";
-    let statusCode = 500;
+    const statusCode = 500;
 
     if (error instanceof Error) {
       errorMessage = error.message;

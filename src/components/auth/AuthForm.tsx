@@ -3,9 +3,15 @@ import { Button } from "../ui/button";
 
 export type AuthFormMode = "login" | "register" | "forgot-password" | "reset-password";
 
+interface User {
+  id: string;
+  email: string;
+  created_at: string;
+}
+
 interface AuthFormProps {
   mode: AuthFormMode;
-  onSuccess?: (user: any) => void;
+  onSuccess?: (user: User) => void;
   redirectTo?: string;
   resetToken?: string; // Dla reset-password
 }
@@ -147,7 +153,7 @@ export function AuthForm({ mode, onSuccess, redirectTo, resetToken }: AuthFormPr
     }
 
     if (fieldError) {
-      setErrors((prev) => ({ ...prev, [field]: fieldError! }));
+      setErrors((prev) => ({ ...prev, [field]: fieldError }));
     }
   };
 
@@ -182,7 +188,7 @@ export function AuthForm({ mode, onSuccess, redirectTo, resetToken }: AuthFormPr
 
     try {
       let endpoint: string;
-      let requestData: any;
+      let requestData: Record<string, unknown>;
 
       switch (mode) {
         case "login":

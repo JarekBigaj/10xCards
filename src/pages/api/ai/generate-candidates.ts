@@ -5,7 +5,7 @@ import type {
   ErrorResponse,
   AiGenerateCandidatesResponseData,
 } from "../../../types";
-import { DEFAULT_USER_ID } from "../../../db/supabase.client";
+
 import { FlashcardService } from "../../../lib/services/flashcard.service";
 import {
   AiGenerateCandidatesRequestSchema,

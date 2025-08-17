@@ -1,7 +1,6 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "../../../db/database.types";
+
 import { FlashcardService } from "../../../lib/services/flashcard.service";
 import { requireAuth } from "../../../lib/utils/auth";
 import {
@@ -9,12 +8,7 @@ import {
   UpdateFlashcardRequestSchema,
   formatFlashcardValidationErrors,
 } from "../../../lib/validation/flashcard-schemas";
-import {
-  createAuthErrorResponse,
-  createServerErrorResponse,
-  createValidationErrorResponse,
-  handleServiceError,
-} from "../../../lib/utils";
+import { createServerErrorResponse, createValidationErrorResponse, handleServiceError } from "../../../lib/utils";
 import type {
   FlashcardResponse,
   UpdateFlashcardRequest,
@@ -154,22 +148,10 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
       user_id: userId,
     };
 
-    // Initialize service and delete flashcard (using regular client with fixed RLS policy)
+    // Initialize service and delete flashcard
     const flashcardService = new FlashcardService(supabase);
 
     try {
-      // Ensure auth context is set for RLS with simplified policy
-      console.log("Session info:", locals.session ? "exists" : "missing");
-      console.log("Access token:", locals.session?.access_token ? "exists" : "missing");
-
-      if (locals.session?.access_token) {
-        await supabase.auth.setSession({
-          access_token: locals.session.access_token,
-          refresh_token: locals.session.refresh_token,
-        });
-        console.log("Session set in supabase client");
-      }
-
       await flashcardService.deleteFlashcard(command);
 
       // Return successful response

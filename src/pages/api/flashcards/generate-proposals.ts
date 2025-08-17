@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import type { FlashcardGenerationRequest, GeneratedFlashcard, ApiResponse, ErrorResponse } from "../../../types";
-import { DEFAULT_USER_ID } from "../../../db/supabase.client";
+
 import { FlashcardService } from "../../../lib/services/flashcard.service";
 import { rateLimiter } from "../../../lib/services/rate-limiter";
 import { z } from "zod";

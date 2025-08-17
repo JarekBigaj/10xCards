@@ -165,7 +165,7 @@ export class OpenRouterLogger {
   /**
    * Get recent log entries
    */
-  getRecentLogs(limit: number = 100): LogEntry[] {
+  getRecentLogs(limit = 100): LogEntry[] {
     return this.logBuffer.slice(-limit);
   }
 

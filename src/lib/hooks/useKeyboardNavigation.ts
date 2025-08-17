@@ -3,7 +3,6 @@ import type { FlashcardDto } from "../../types";
 
 interface UseKeyboardNavigationProps {
   flashcards: FlashcardDto[];
-  selectedIds: Set<string>;
   onToggleSelection: (id: string) => void;
   onSelectAll: () => void;
   onEdit: (flashcard: FlashcardDto) => void;
@@ -13,7 +12,6 @@ interface UseKeyboardNavigationProps {
 
 export function useKeyboardNavigation({
   flashcards,
-  selectedIds,
   onToggleSelection,
   onSelectAll,
   onEdit,

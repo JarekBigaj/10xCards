@@ -115,10 +115,14 @@ export function EditCandidateModal({ isOpen, candidate, onSave, onCancel }: Edit
         <div className="p-6 space-y-6">
           {/* Front text */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label
+              htmlFor="front-text-edit"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
               Pytanie (Front) <span className="text-red-500">*</span>
             </label>
             <textarea
+              id="front-text-edit"
               value={formData.frontText}
               onChange={(e) => handleInputChange("frontText", e.target.value)}
               className={`w-full p-3 border rounded-md resize-none ${
@@ -138,10 +142,11 @@ export function EditCandidateModal({ isOpen, candidate, onSave, onCancel }: Edit
 
           {/* Back text */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="back-text-edit" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Odpowiedź (Back) <span className="text-red-500">*</span>
             </label>
             <textarea
+              id="back-text-edit"
               value={formData.backText}
               onChange={(e) => handleInputChange("backText", e.target.value)}
               className={`w-full p-3 border rounded-md resize-none ${

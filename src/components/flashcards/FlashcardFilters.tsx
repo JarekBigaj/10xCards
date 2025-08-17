@@ -36,9 +36,11 @@ export function FlashcardFilters({ filters, onChange, onReset }: FlashcardFilter
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Source filter */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">Źródło</label>
+          <label htmlFor="source-filter" className="text-sm font-medium text-foreground">
+            Źródło
+          </label>
           <Select value={filters.source || ""} onValueChange={(value) => updateFilter("source", value || undefined)}>
-            <SelectTrigger>
+            <SelectTrigger id="source-filter">
               <SelectValue placeholder="Wszystkie źródła" />
             </SelectTrigger>
             <SelectContent>
@@ -52,8 +54,11 @@ export function FlashcardFilters({ filters, onChange, onReset }: FlashcardFilter
 
         {/* Date range filters */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">Utworzone po</label>
+          <label htmlFor="created-after-filter" className="text-sm font-medium text-foreground">
+            Utworzone po
+          </label>
           <Input
+            id="created-after-filter"
             type="date"
             value={filters.created_after || ""}
             onChange={(e) => updateFilter("created_after", e.target.value || undefined)}
@@ -61,8 +66,11 @@ export function FlashcardFilters({ filters, onChange, onReset }: FlashcardFilter
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">Utworzone przed</label>
+          <label htmlFor="created-before-filter" className="text-sm font-medium text-foreground">
+            Utworzone przed
+          </label>
           <Input
+            id="created-before-filter"
             type="date"
             value={filters.created_before || ""}
             onChange={(e) => updateFilter("created_before", e.target.value || undefined)}
@@ -71,8 +79,11 @@ export function FlashcardFilters({ filters, onChange, onReset }: FlashcardFilter
 
         {/* Difficulty range */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">Trudność min</label>
+          <label htmlFor="difficulty-min-filter" className="text-sm font-medium text-foreground">
+            Trudność min
+          </label>
           <Input
+            id="difficulty-min-filter"
             type="number"
             min="0"
             max="5"
@@ -84,8 +95,11 @@ export function FlashcardFilters({ filters, onChange, onReset }: FlashcardFilter
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">Trudność max</label>
+          <label htmlFor="difficulty-max-filter" className="text-sm font-medium text-foreground">
+            Trudność max
+          </label>
           <Input
+            id="difficulty-max-filter"
             type="number"
             min="0"
             max="5"
@@ -98,8 +112,11 @@ export function FlashcardFilters({ filters, onChange, onReset }: FlashcardFilter
 
         {/* Repetitions range */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">Powtórki min</label>
+          <label htmlFor="reps-min-filter" className="text-sm font-medium text-foreground">
+            Powtórki min
+          </label>
           <Input
+            id="reps-min-filter"
             type="number"
             min="0"
             value={filters.reps_min || ""}
@@ -109,8 +126,11 @@ export function FlashcardFilters({ filters, onChange, onReset }: FlashcardFilter
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">Powtórki max</label>
+          <label htmlFor="reps-max-filter" className="text-sm font-medium text-foreground">
+            Powtórki max
+          </label>
           <Input
+            id="reps-max-filter"
             type="number"
             min="0"
             value={filters.reps_max || ""}

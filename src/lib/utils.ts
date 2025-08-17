@@ -11,7 +11,7 @@ export function cn(...inputs: ClassValue[]) {
  */
 export function createErrorResponse(
   error: string,
-  statusCode: number = 500,
+  statusCode = 500,
   details?: ApiError[]
 ): { response: Response; statusCode: number } {
   const errorResponse: ErrorResponse = {
@@ -33,7 +33,7 @@ export function createErrorResponse(
  * Creates standardized validation error response
  */
 export function createValidationErrorResponse(
-  message: string = "Validation failed",
+  message = "Validation failed",
   details: ApiError[]
 ): { response: Response; statusCode: number } {
   return createErrorResponse(message, 400, details);
@@ -49,7 +49,7 @@ export function createAuthErrorResponse(): { response: Response; statusCode: num
 /**
  * Creates standardized not found error response
  */
-export function createNotFoundErrorResponse(resource: string = "Resource"): { response: Response; statusCode: number } {
+export function createNotFoundErrorResponse(resource = "Resource"): { response: Response; statusCode: number } {
   return createErrorResponse(`${resource} not found or access denied`, 404);
 }
 
@@ -58,7 +58,7 @@ export function createNotFoundErrorResponse(resource: string = "Resource"): { re
  */
 export function createDuplicateErrorResponse(
   field: string,
-  message: string = "Duplicate entry"
+  message = "Duplicate entry"
 ): { response: Response; statusCode: number } {
   const details: ApiError[] = [
     {
@@ -74,7 +74,7 @@ export function createDuplicateErrorResponse(
 /**
  * Creates standardized server error response
  */
-export function createServerErrorResponse(message: string = "Internal server error"): {
+export function createServerErrorResponse(message = "Internal server error"): {
   response: Response;
   statusCode: number;
 } {

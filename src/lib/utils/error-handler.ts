@@ -3,8 +3,8 @@ export class FlashcardError extends Error {
   constructor(
     message: string,
     public code: string,
-    public statusCode: number = 500,
-    public isRetryable: boolean = false
+    public statusCode = 500,
+    public isRetryable = false
   ) {
     super(message);
     this.name = "FlashcardError";

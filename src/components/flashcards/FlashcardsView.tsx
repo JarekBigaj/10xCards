@@ -11,20 +11,12 @@ import { EditFlashcardModal } from "./EditFlashcardModal";
 import { DeleteConfirmationModal } from "./DeleteConfirmationModal";
 import type { FlashcardDto, FlashcardStats } from "../../types";
 
-interface User {
-  id: string;
-  email: string;
-  email_confirmed: boolean;
-  created_at: Date;
-}
-
 interface FlashcardsViewProps {
-  user: User;
   initialFlashcards?: FlashcardDto[];
   initialStats?: FlashcardStats;
 }
 
-export function FlashcardsView({ user, initialFlashcards, initialStats }: FlashcardsViewProps) {
+export function FlashcardsView({ initialFlashcards, initialStats }: FlashcardsViewProps) {
   const { state, computed, actions } = useFlashcardsView(initialFlashcards, initialStats);
 
   return (

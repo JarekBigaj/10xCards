@@ -41,7 +41,7 @@ export function ProfileManager({ user }: ProfileManagerProps) {
         <div className="space-y-6">
           {/* Email */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Adres email</label>
+            <div className="block text-sm font-medium text-foreground mb-2">Adres email</div>
             <div className="flex items-center justify-between p-3 bg-muted/50 rounded-md">
               <span className="text-card-foreground">{user.email}</span>
               {user.email_confirmed ? (
@@ -68,7 +68,7 @@ export function ProfileManager({ user }: ProfileManagerProps) {
 
           {/* Member Since */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Członek od</label>
+            <div className="block text-sm font-medium text-foreground mb-2">Członek od</div>
             <div className="p-3 bg-muted/50 rounded-md">
               <span className="text-card-foreground">
                 {user.created_at.toLocaleDateString("pl-PL", { year: "numeric", month: "long" })}

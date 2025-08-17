@@ -24,7 +24,6 @@ export function FlashcardsToolbar({
   onSearchChange,
   filters,
   onFiltersChange,
-  sortConfig,
   onSortChange,
   viewMode,
   onViewModeChange,

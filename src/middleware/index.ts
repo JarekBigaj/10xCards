@@ -45,6 +45,14 @@ export const onRequest = defineMiddleware(async ({ locals, cookies, url, request
         data: { session },
       } = await supabase.auth.getSession();
       locals.session = session;
+
+      // IMPORTANT: Set the session in the supabase client for RLS to work
+      if (session) {
+        await supabase.auth.setSession({
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
+        });
+      }
     } else {
       locals.user = null;
       locals.session = null;
