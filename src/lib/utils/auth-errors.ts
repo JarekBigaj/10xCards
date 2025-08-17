@@ -80,7 +80,7 @@ export function handleServerError(error: unknown): Response {
   return new Response(
     JSON.stringify({
       success: false,
-      error: "Wystąpił błąd serwera",
+      error: "Wystąpił błąd serwera" + error,
       code: "SERVER_ERROR",
     }),
     {
