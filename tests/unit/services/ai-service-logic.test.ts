@@ -2,12 +2,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { generateTextHash, AiService, createAiService } from "@/lib/services/ai.service";
 import type { FlashcardGenerationRequest } from "@/types";
 
-// Mock crypto.randomUUID
+// Mock crypto.randomUUID using vi.stubGlobal
 const mockUuid = "test-uuid-12345-67890-abcdef";
-global.crypto = {
+vi.stubGlobal("crypto", {
   ...global.crypto,
   randomUUID: () => mockUuid,
-} as unknown as Crypto;
+});
 
 describe("AiService - Business Logic", () => {
   beforeEach(() => {
