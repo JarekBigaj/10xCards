@@ -16,7 +16,7 @@ const FlashcardGenerationRequestSchema = z.object({
   additional_context: z.string().max(1000, "Additional context must be less than 1000 characters").optional(),
 });
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   try {
     // Parse request body
     let requestBody: unknown;
@@ -84,9 +84,9 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // TODO: Add proper authentication check when middleware is ready
-    // For now, use DEFAULT_USER_ID for testing
-    const userId = DEFAULT_USER_ID;
+    // Get user ID from middleware if logged in, or use anonymous ID for rate limiting
+    // According to US-016: "Użytkownik MOŻE wygenerować fiszki z tekstu ale nie może ich zapisać"
+    const userId = locals.user?.id || "anonymous-user";
 
     // Check rate limiting
     const rateLimitResult = rateLimiter.isAllowed(userId);

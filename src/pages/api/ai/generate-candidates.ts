@@ -17,8 +17,15 @@ import { z } from "zod";
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   try {
+    console.log("🚀 [generate-candidates] Starting request");
+    console.log(
+      "🔑 [generate-candidates] OPENROUTER_API_KEY:",
+      import.meta.env.OPENROUTER_API_KEY ? "PROVIDED" : "NOT_PROVIDED"
+    );
+    console.log("👤 [generate-candidates] User ID:", locals.user?.id || "anonymous-user");
+
     // Parse request body
     let requestBody: unknown;
     try {
@@ -85,9 +92,9 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // TODO: Add proper authentication check when middleware is ready
-    // For now, use DEFAULT_USER_ID for testing
-    const userId = DEFAULT_USER_ID;
+    // Get user ID from middleware if logged in, or use anonymous ID for rate limiting
+    // According to US-016: "Użytkownik MOŻE wygenerować fiszki z tekstu ale nie może ich zapisać"
+    const userId = locals.user?.id || "anonymous-user";
 
     // Check rate limiting
     const rateLimitResult = rateLimiter.isAllowed(userId);

@@ -6,7 +6,16 @@ import { ResultsSection } from "./ResultsSection";
 import { ErrorDisplay } from "./ErrorDisplay";
 import { EditCandidateModal } from "./EditCandidateModal";
 
-export default function GenerateViewClient() {
+interface GenerateViewClientProps {
+  user?: {
+    id: string;
+    email: string;
+    email_confirmed: boolean;
+    created_at: Date;
+  } | null;
+}
+
+export default function GenerateViewClient({ user }: GenerateViewClientProps) {
   const { state, actions } = useGenerateFlashcards();
 
   return (
@@ -44,6 +53,7 @@ export default function GenerateViewClient() {
             onSave={actions.saveSelectedCandidates}
             isSaving={state.isSaving}
             onEditCandidate={actions.openCandidateEdit}
+            isLoggedIn={!!user}
           />
         </div>
       )}
@@ -53,13 +63,15 @@ export default function GenerateViewClient() {
         <ErrorDisplay error={state.error} onRetry={actions.retryGeneration} onDismiss={actions.clearError} />
       )}
 
-      {/* EditCandidateModal */}
-      <EditCandidateModal
-        isOpen={state.editingCandidate !== null}
-        candidate={state.editingCandidate}
-        onSave={actions.saveCandidateEdit}
-        onCancel={actions.cancelCandidateEdit}
-      />
+      {/* EditCandidateModal - tylko dla zalogowanych */}
+      {user && (
+        <EditCandidateModal
+          isOpen={state.editingCandidate !== null}
+          candidate={state.editingCandidate}
+          onSave={actions.saveCandidateEdit}
+          onCancel={actions.cancelCandidateEdit}
+        />
+      )}
     </div>
   );
 }

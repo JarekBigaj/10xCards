@@ -4,7 +4,7 @@ import {
   formatFlashcardValidationErrors,
 } from "../../../lib/validation/flashcard-schemas";
 import { checkDuplicate } from "../../../lib/services/duplicate-check.service";
-import { getCurrentUserId, createAuthenticationError } from "../../../lib/utils/auth";
+import { getCurrentUserId, getUserIdFromLocals, createAuthenticationError } from "../../../lib/utils/auth";
 import type { CheckDuplicateRequest, DuplicateCheckResponse, ErrorResponse } from "../../../types";
 
 export const prerender = false;
@@ -15,8 +15,8 @@ export const prerender = false;
  */
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    // Get current user ID (handles both test mode and production auth)
-    const { userId, error: authError } = await getCurrentUserId(locals.supabase);
+    // Get current user ID from middleware (preferred method)
+    const { userId, error: authError } = getUserIdFromLocals(locals);
 
     if (!userId || authError) {
       const errorResponse = createAuthenticationError();

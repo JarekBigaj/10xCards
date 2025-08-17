@@ -181,26 +181,82 @@ export function AuthForm({ mode, onSuccess, redirectTo, resetToken }: AuthFormPr
     setIsLoading(true);
 
     try {
-      // TODO: Tutaj będzie integracja z API
-      console.log(`${mode} attempt:`, {
-        email: formData.email,
-        password: formData.password,
-        resetToken,
-      });
+      let endpoint: string;
+      let requestData: any;
 
-      // Symulacja API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Symulacja sukcesu
-      if (onSuccess) {
-        onSuccess({ email: formData.email });
+      switch (mode) {
+        case "login":
+          endpoint = "/api/auth/login";
+          requestData = {
+            email: formData.email,
+            password: formData.password,
+          };
+          break;
+        case "register":
+          endpoint = "/api/auth/register";
+          requestData = {
+            email: formData.email,
+            password: formData.password,
+            confirmPassword: formData.confirmPassword,
+          };
+          break;
+        case "forgot-password":
+          endpoint = "/api/auth/forgot-password";
+          requestData = {
+            email: formData.email,
+          };
+          break;
+        case "reset-password":
+          endpoint = "/api/auth/reset-password";
+          requestData = {
+            token: resetToken,
+            password: formData.password,
+            confirmPassword: formData.confirmPassword,
+          };
+          break;
+        default:
+          throw new Error("Invalid form mode");
       }
 
-      // TODO: Przekierowanie będzie obsługiwane przez routing
-      console.log(`Success! Would redirect to: ${redirectTo || "/dashboard"}`);
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        // Mapowanie błędów z serwera na lokalne komunikaty
+        const errorMessage =
+          AUTH_ERROR_MESSAGES[result.code as keyof typeof AUTH_ERROR_MESSAGES] ||
+          result.error ||
+          AUTH_ERROR_MESSAGES.UNKNOWN;
+        setGlobalError(errorMessage);
+        return;
+      }
+
+      // Sukces
+      if (onSuccess) {
+        onSuccess(result.data?.user || { email: formData.email });
+      }
+
+      // Przekierowanie po pomyślnej operacji
+      if (mode === "login" || mode === "register") {
+        const redirectUrl = redirectTo || "/dashboard";
+        window.location.href = redirectUrl;
+      } else if (mode === "forgot-password") {
+        setGlobalError(null);
+        // Pokazujemy komunikat sukcesu zamiast błędu
+        setGlobalError("Jeśli konto istnieje, otrzymasz email z linkiem do resetu");
+      } else if (mode === "reset-password") {
+        window.location.href = "/auth/login?message=password-reset-success";
+      }
     } catch (error) {
-      // TODO: Mapowanie błędów z API
-      setGlobalError(AUTH_ERROR_MESSAGES.UNKNOWN);
+      console.error("Auth error:", error);
+      setGlobalError(AUTH_ERROR_MESSAGES.NETWORK_ERROR);
     } finally {
       setIsLoading(false);
     }

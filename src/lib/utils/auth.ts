@@ -5,7 +5,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
  * Configuration for authentication mode
  * Set to true to enable real authentication, false for testing with DEFAULT_USER_ID
  */
-export const AUTH_ENABLED = false;
+export const AUTH_ENABLED = true;
 
 /**
  * Get the current user ID for API requests
@@ -43,6 +43,24 @@ export async function getCurrentUserId(supabase: SupabaseClient): Promise<{
       error: error instanceof Error ? error.message : "Authentication failed",
     };
   }
+}
+
+/**
+ * Get user ID from Astro locals (preferred method for API routes)
+ */
+export function getUserIdFromLocals(locals: App.Locals): {
+  userId: string | null;
+  error?: string;
+} {
+  if (!AUTH_ENABLED) {
+    return { userId: DEFAULT_USER_ID };
+  }
+
+  if (!locals.user) {
+    return { userId: null, error: "User not authenticated" };
+  }
+
+  return { userId: locals.user.id };
 }
 
 /**

@@ -7,9 +7,10 @@ interface CandidateRowProps {
   onUpdate: (id: string, updates: Partial<CandidateWithStatus>) => void;
   onEdit: (candidate: CandidateWithStatus) => void;
   onToggleStatus: (id: string, status: CandidateStatus) => void;
+  isLoggedIn: boolean;
 }
 
-export function CandidateRow({ candidate, onUpdate, onEdit, onToggleStatus }: CandidateRowProps) {
+export function CandidateRow({ candidate, onUpdate, onEdit, onToggleStatus, isLoggedIn }: CandidateRowProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editFront, setEditFront] = useState(candidate.front_text);
   const [editBack, setEditBack] = useState(candidate.back_text);
@@ -131,65 +132,71 @@ export function CandidateRow({ candidate, onUpdate, onEdit, onToggleStatus }: Ca
         </span>
       </td>
 
-      {/* Actions */}
+      {/* Actions - tylko dla zalogowanych */}
       <td className="py-3 px-4">
-        <div className="flex items-center space-x-2">
-          {isEditing ? (
-            <>
-              <Button
-                onClick={handleSave}
-                size="sm"
-                variant="outline"
-                className="text-green-600 border-green-300 hover:bg-green-50"
-              >
-                Zapisz
-              </Button>
-              <Button
-                onClick={handleCancel}
-                size="sm"
-                variant="outline"
-                className="text-gray-600 border-gray-300 hover:bg-gray-50"
-              >
-                Anuluj
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                onClick={() => setIsEditing(true)}
-                size="sm"
-                variant="outline"
-                className="text-blue-600 border-blue-300 hover:bg-blue-50"
-              >
-                Edytuj
-              </Button>
-
-              {shouldShowModal && (
+        {isLoggedIn ? (
+          <div className="flex items-center space-x-2">
+            {isEditing ? (
+              <>
                 <Button
-                  onClick={() => onEdit(candidate)}
+                  onClick={handleSave}
                   size="sm"
                   variant="outline"
-                  className="text-purple-600 border-purple-300 hover:bg-purple-50"
+                  className="text-green-600 border-green-300 hover:bg-green-50"
                 >
-                  Modal
+                  Zapisz
                 </Button>
-              )}
+                <Button
+                  onClick={handleCancel}
+                  size="sm"
+                  variant="outline"
+                  className="text-gray-600 border-gray-300 hover:bg-gray-50"
+                >
+                  Anuluj
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  onClick={() => setIsEditing(true)}
+                  size="sm"
+                  variant="outline"
+                  className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                >
+                  Edytuj
+                </Button>
 
-              <Button
-                onClick={() => onToggleStatus(candidate.id, candidate.status === "accepted" ? "rejected" : "accepted")}
-                size="sm"
-                variant={candidate.status === "accepted" ? "outline" : "default"}
-                className={
-                  candidate.status === "accepted"
-                    ? "text-red-600 border-red-300 hover:bg-red-50"
-                    : "text-white bg-green-600 hover:bg-green-700"
-                }
-              >
-                {candidate.status === "accepted" ? "Odrzuć" : "Akceptuj"}
-              </Button>
-            </>
-          )}
-        </div>
+                {shouldShowModal && (
+                  <Button
+                    onClick={() => onEdit(candidate)}
+                    size="sm"
+                    variant="outline"
+                    className="text-purple-600 border-purple-300 hover:bg-purple-50"
+                  >
+                    Modal
+                  </Button>
+                )}
+
+                <Button
+                  onClick={() =>
+                    onToggleStatus(candidate.id, candidate.status === "accepted" ? "rejected" : "accepted")
+                  }
+                  size="sm"
+                  variant={candidate.status === "accepted" ? "outline" : "default"}
+                  className={
+                    candidate.status === "accepted"
+                      ? "text-red-600 border-red-300 hover:bg-red-50"
+                      : "text-white bg-green-600 hover:bg-green-700"
+                  }
+                >
+                  {candidate.status === "accepted" ? "Odrzuć" : "Akceptuj"}
+                </Button>
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="text-sm text-muted-foreground text-center">Tylko podgląd</div>
+        )}
       </td>
     </tr>
   );

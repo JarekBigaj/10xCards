@@ -13,6 +13,7 @@ interface ResultsSectionProps {
   onSave: () => void;
   isSaving: boolean;
   onEditCandidate?: (candidate: CandidateWithStatus) => void;
+  isLoggedIn: boolean;
 }
 
 export function ResultsSection({
@@ -22,6 +23,7 @@ export function ResultsSection({
   onSave,
   isSaving,
   onEditCandidate,
+  isLoggedIn,
 }: ResultsSectionProps) {
   const acceptedCount = candidates.filter((c) => c.status === "accepted").length;
   const rejectedCount = candidates.filter((c) => c.status === "rejected").length;
@@ -37,14 +39,16 @@ export function ResultsSection({
         pendingCount={pendingCount}
       />
 
-      {/* Bulk actions */}
-      <BulkActionsBar
-        candidatesCount={candidates.length}
-        selectedCount={acceptedCount}
-        onAcceptAll={() => onBulkAction("accept-all")}
-        onRejectAll={() => onBulkAction("reject-all")}
-        onClearSelection={() => onBulkAction("clear-selection")}
-      />
+      {/* Bulk actions - tylko dla zalogowanych */}
+      {isLoggedIn && (
+        <BulkActionsBar
+          candidatesCount={candidates.length}
+          selectedCount={acceptedCount}
+          onAcceptAll={() => onBulkAction("accept-all")}
+          onRejectAll={() => onBulkAction("reject-all")}
+          onClearSelection={() => onBulkAction("clear-selection")}
+        />
+      )}
 
       {/* Candidates table */}
       <CandidatesTable
@@ -54,17 +58,35 @@ export function ResultsSection({
         onToggleStatus={(id, status) => {
           onCandidateUpdate(id, { status });
         }}
+        isLoggedIn={isLoggedIn}
       />
 
-      {/* Save button */}
-      <div className="flex justify-center pt-4 border-t border-gray-200 dark:border-gray-700">
-        <SaveSelectedButton
-          selectedCount={acceptedCount}
-          onSave={onSave}
-          isLoading={isSaving}
-          disabled={acceptedCount === 0 || isSaving}
-        />
-      </div>
+      {/* Save button - tylko dla zalogowanych */}
+      {isLoggedIn ? (
+        <div className="flex justify-center pt-4 border-t border-gray-200 dark:border-gray-700">
+          <SaveSelectedButton
+            selectedCount={acceptedCount}
+            onSave={onSave}
+            isLoading={isSaving}
+            disabled={acceptedCount === 0 || isSaving}
+          />
+        </div>
+      ) : (
+        /* Komunikat dla niezalogowanych */
+        <div className="flex justify-center pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="text-center space-y-3">
+            <p className="text-muted-foreground">Zaloguj się, aby móc edytować i zapisywać fiszki</p>
+            <div className="flex gap-3 justify-center">
+              <Button asChild variant="outline" size="sm">
+                <a href="/auth/login">Zaloguj się</a>
+              </Button>
+              <Button asChild size="sm">
+                <a href="/auth/register">Zarejestruj się</a>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

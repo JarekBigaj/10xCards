@@ -29,12 +29,29 @@ export function UserMenu({ user }: UserMenuProps) {
     };
   }, []);
 
-  // Obsługa wylogowania - placeholder
+  // Obsługa wylogowania
   const handleLogout = async () => {
-    // TODO: Implementacja wylogowania
-    console.log("Logging out...");
-    // Na razie przekieruj do strony głównej
-    window.location.href = "/";
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        // Przekieruj do strony głównej po pomyślnym wylogowaniu
+        window.location.href = "/";
+      } else {
+        console.error("Logout failed");
+        // Fallback - przekieruj mimo błędu
+        window.location.href = "/";
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Fallback - przekieruj mimo błędu
+      window.location.href = "/";
+    }
   };
 
   return (

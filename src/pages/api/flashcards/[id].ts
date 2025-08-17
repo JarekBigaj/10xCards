@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
 import { FlashcardService } from "../../../lib/services/flashcard.service";
-import { getCurrentUserId, createAuthenticationError } from "../../../lib/utils/auth";
+import { getCurrentUserId, getUserIdFromLocals, createAuthenticationError } from "../../../lib/utils/auth";
 import {
   UuidPathParamSchema,
   UpdateFlashcardRequestSchema,
@@ -35,8 +35,8 @@ export const PUT: APIRoute = async ({ request, params, locals }) => {
       return createServerErrorResponse("Supabase client not available").response;
     }
 
-    // Get current user ID (handles both test mode and production auth)
-    const { userId, error: authError } = await getCurrentUserId(supabase);
+    // Get current user ID from middleware (preferred method)
+    const { userId, error: authError } = getUserIdFromLocals(locals);
 
     if (!userId || authError) {
       return createAuthErrorResponse().response;
@@ -135,8 +135,8 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
       return createServerErrorResponse("Supabase client not available").response;
     }
 
-    // Get current user ID (handles both test mode and production auth)
-    const { userId, error: authError } = await getCurrentUserId(supabase);
+    // Get current user ID from middleware (preferred method)
+    const { userId, error: authError } = getUserIdFromLocals(locals);
 
     if (!userId || authError) {
       return createAuthErrorResponse().response;

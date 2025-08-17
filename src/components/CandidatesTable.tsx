@@ -7,9 +7,16 @@ interface CandidatesTableProps {
   onCandidateUpdate: (id: string, updates: Partial<CandidateWithStatus>) => void;
   onEdit: (candidate: CandidateWithStatus) => void;
   onToggleStatus: (id: string, status: CandidateStatus) => void;
+  isLoggedIn: boolean;
 }
 
-export function CandidatesTable({ candidates, onCandidateUpdate, onEdit, onToggleStatus }: CandidatesTableProps) {
+export function CandidatesTable({
+  candidates,
+  onCandidateUpdate,
+  onEdit,
+  onToggleStatus,
+  isLoggedIn,
+}: CandidatesTableProps) {
   if (candidates.length === 0) {
     return <div className="text-center py-8 text-gray-500 dark:text-gray-400">Brak kandydatów do wyświetlenia</div>;
   }
@@ -34,6 +41,7 @@ export function CandidatesTable({ candidates, onCandidateUpdate, onEdit, onToggl
               onUpdate={onCandidateUpdate}
               onEdit={onEdit}
               onToggleStatus={onToggleStatus}
+              isLoggedIn={isLoggedIn}
             />
           ))}
         </tbody>

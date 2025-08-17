@@ -2,24 +2,27 @@
 import Layout from "../layouts/Layout.astro";
 import { Navigation } from "../components/navigation/Navigation";
 
-// TODO: Po implementacji autentykacji, sprawdzać czy użytkownik jest zalogowany
-// const { user } = Astro.locals;
-// if (!user) {
-//   return Astro.redirect('/auth/login');
-// }
+// Auth check - middleware już przekierowuje niezalogowanych użytkowników
+const { user } = Astro.locals;
 
-// Mock user data - zostanie zastąpione prawdziwymi danymi z sesji
-const mockUser = {
-  id: "user-123",
-  email: "user@example.com",
-  email_confirmed: true,
-};
+// Dodatkowa walidacja (middleware powinno to już obsłużyć)
+if (!user) {
+  return Astro.redirect("/auth/login");
+}
 
 const currentPath = Astro.url.pathname;
+
+// Format user data for display
+const userData = {
+  id: user.id,
+  email: user.email || "",
+  email_confirmed: !!user.email_confirmed_at,
+  created_at: user.created_at ? new Date(user.created_at) : new Date(),
+};
 ---
 
 <Layout title="Profil - 10xCards">
-  <Navigation user={mockUser} currentPath={currentPath} client:load />
+  <Navigation user={userData} currentPath={currentPath} client:load />
 
   <main class="min-h-screen bg-background">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -44,9 +47,9 @@ const currentPath = Astro.url.pathname;
               <div>
                 <label class="block text-sm font-medium text-foreground mb-2"> Adres email </label>
                 <div class="flex items-center justify-between p-3 bg-muted/50 rounded-md">
-                  <span class="text-card-foreground">{mockUser.email}</span>
+                  <span class="text-card-foreground">{userData.email}</span>
                   {
-                    mockUser.email_confirmed ? (
+                    userData.email_confirmed ? (
                       <span class="flex items-center text-xs text-green-600 dark:text-green-400">
                         <svg class="mr-1 h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
                           <path
@@ -70,7 +73,9 @@ const currentPath = Astro.url.pathname;
               <div>
                 <label class="block text-sm font-medium text-foreground mb-2"> Członek od </label>
                 <div class="p-3 bg-muted/50 rounded-md">
-                  <span class="text-card-foreground">Styczeń 2024</span>
+                  <span class="text-card-foreground"
+                    >{userData.created_at.toLocaleDateString("pl-PL", { year: "numeric", month: "long" })}</span
+                  >
                 </div>
               </div>
 
