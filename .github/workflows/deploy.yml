@@ -24,19 +24,21 @@ jobs:
       NODE_VERSION: "22.14.0"
     steps:
       - name: Checkout code
-        uses: ./.github/actions/checkout
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: ./.github/actions/setup-node
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Build application
-        shell: bash
         run: npm run build
 
       - name: Validate build output
-        shell: bash
         run: |
           if [ ! -d "dist" ]; then
             echo "❌ Build failed - dist directory not found"
@@ -53,19 +55,21 @@ jobs:
       NODE_VERSION: "22.14.0"
     steps:
       - name: Checkout code
-        uses: ./.github/actions/checkout
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: ./.github/actions/setup-node
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Build application
-        shell: bash
         run: npm run build
 
       - name: Deploy to ${{ github.event.inputs.environment }}
-        shell: bash
         run: |
           echo "🚀 Deploying to ${{ github.event.inputs.environment }}..."
           echo "📦 Build artifacts ready for deployment"
@@ -80,7 +84,6 @@ jobs:
           echo "✅ Deployment completed successfully"
 
       - name: Health check
-        shell: bash
         run: |
           echo "🏥 Running health check..."
           # Dodaj tutaj logikę sprawdzania czy aplikacja działa

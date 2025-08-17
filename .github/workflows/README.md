@@ -33,13 +33,6 @@ Projekt zawiera dwa główne workflow GitHub Actions:
 
 ## Architektura
 
-### Composite Actions
-
-Workflow wykorzystuje composite actions dla lepszej reużywalności:
-
-- **`.github/actions/checkout`** - Checkout kodu z repozytorium
-- **`.github/actions/setup-node`** - Setup Node.js z npm caching
-
 ### Struktura Jobs
 
 #### CI/CD Pipeline
@@ -55,6 +48,15 @@ security-audit    type-check
 ```
 validate-deployment → deploy
 ```
+
+### Wzorce Implementacji
+
+Każdy job zawiera standardowe kroki:
+
+1. **Checkout** - `actions/checkout@v5`
+2. **Setup Node.js** - `actions/setup-node@v4` z npm caching
+3. **Install dependencies** - `npm ci`
+4. **Execute task** - konkretna operacja (testy, build, etc.)
 
 ## Konfiguracja
 
@@ -141,8 +143,8 @@ Workflow używa najnowszych wersji GitHub Actions:
 - Sprawdź uprawnienia na serwerze
 - Sprawdź logi deploymentu
 
-### Composite Actions
+### Ogólne problemy
 
-- Sprawdź czy pliki `.github/actions/*/action.yml` istnieją
-- Sprawdź składnię YAML w composite actions
-- Sprawdź czy ścieżki do actions są poprawne
+- Sprawdź czy wszystkie actions mają poprawne wersje
+- Sprawdź czy cache npm działa poprawnie
+- Sprawdź czy Node.js version jest zgodny z .nvmrc

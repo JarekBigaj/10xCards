@@ -15,19 +15,21 @@ jobs:
       NODE_VERSION: "22.14.0"
     steps:
       - name: Checkout code
-        uses: ./.github/actions/checkout
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: ./.github/actions/setup-node
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Run ESLint
-        shell: bash
         run: npm run lint
 
       - name: Check Prettier formatting
-        shell: bash
         run: npx prettier --check .
 
   unit-tests:
@@ -37,15 +39,18 @@ jobs:
       NODE_VERSION: "22.14.0"
     steps:
       - name: Checkout code
-        uses: ./.github/actions/checkout
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: ./.github/actions/setup-node
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Run unit tests
-        shell: bash
         run: npm run test:unit
 
       - name: Upload coverage reports
@@ -63,19 +68,21 @@ jobs:
       NODE_VERSION: "22.14.0"
     steps:
       - name: Checkout code
-        uses: ./.github/actions/checkout
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: ./.github/actions/setup-node
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Install Playwright browsers
-        shell: bash
         run: npx playwright install --with-deps
 
       - name: Run E2E tests
-        shell: bash
         run: npm run test:e2e
 
       - name: Upload test results
@@ -94,15 +101,18 @@ jobs:
       NODE_VERSION: "22.14.0"
     steps:
       - name: Checkout code
-        uses: ./.github/actions/checkout
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: ./.github/actions/setup-node
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Build application
-        shell: bash
         run: npm run build
 
       - name: Upload build artifacts
@@ -119,15 +129,18 @@ jobs:
       NODE_VERSION: "22.14.0"
     steps:
       - name: Checkout code
-        uses: ./.github/actions/checkout
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: ./.github/actions/setup-node
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Run security audit
-        shell: bash
         run: npm audit --audit-level=moderate
 
   type-check:
@@ -137,13 +150,16 @@ jobs:
       NODE_VERSION: "22.14.0"
     steps:
       - name: Checkout code
-        uses: ./.github/actions/checkout
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: ./.github/actions/setup-node
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Run TypeScript type check
-        shell: bash
         run: npx tsc --noEmit
