@@ -100,19 +100,16 @@ Endpoint służy do tworzenia jednej lub wielu fiszek jednocześnie. Obsługuje 
 ## 5. Przepływ danych
 
 1. **Walidacja żądania**:
-
    - Sprawdzenie sesji użytkownika (Supabase Auth)
    - Walidacja struktury JSON (Zod schema)
    - Walidacja długości tekstów i dozwolonych wartości
 
 2. **Przetwarzanie danych**:
-
    - Generowanie hash-ów dla `front_text` i `back_text`
    - Sprawdzenie duplikatów w bazie danych
    - Przygotowanie komend dla warstwy serwisu
 
 3. **Operacje bazodanowe**:
-
    - Wstawienie nowych fiszek do tabeli `flashcards`
    - Wykorzystanie RLS dla bezpieczeństwa na poziomie wiersza
    - Obsługa błędów duplikatów i ograniczeń
@@ -147,26 +144,21 @@ Endpoint służy do tworzenia jednej lub wielu fiszek jednocześnie. Obsługuje 
 ### Kody statusu i scenariusze:
 
 - **400 Bad Request**:
-
   - Nieprawidłowa struktura JSON
   - Błędy walidacji (za długie teksty, nieprawidłowe wartości)
   - Brak wymaganych pól
 
 - **401 Unauthorized**:
-
   - Brak sesji użytkownika
   - Nieprawidłowy lub wygasły token
 
 - **409 Conflict**:
-
   - Duplikat `front_text` dla użytkownika (tylko pojedyncza fiszka)
 
 - **413 Payload Too Large**:
-
   - Przekroczenie limitu 50 fiszek w żądaniu wsadowym
 
 - **207 Multi-Status**:
-
   - Częściowy sukces w operacjach wsadowych
   - Niektóre fiszki utworzone, inne odrzucone
 

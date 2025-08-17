@@ -324,13 +324,11 @@ W Supabase Dashboard → Authentication → Settings → SMTP Settings:
 Po skonfigurowaniu templates:
 
 1. **Test Email Confirmation**:
-
    - Zarejestruj się nowym kontem
    - Sprawdź czy email z potwierdzeniem przychodzi
    - Kliknij link i sprawdź czy przekierowuje do właściwej strony
 
 2. **Test Password Reset**:
-
    - Użyj funkcji "Zapomniałeś hasła?"
    - Sprawdź czy email przychodzi
    - Kliknij link i sprawdź czy można ustawić nowe hasło

@@ -104,32 +104,27 @@ Endpoint służy do sprawdzania czy fiszka o podobnej treści już istnieje w ba
 ## 9. Etapy wdrożenia
 
 1. **Utworzenie Zod schema** w `src/lib/validation/flashcard.schemas.ts`
-
    - Schema dla `CheckDuplicateRequest`
    - Walidacja długości tekstu i formatu UUID
 
 2. **Implementacja service** w `src/lib/services/duplicate-check.service.ts`
-
    - Funkcja `generateContentHash()` dla SHA-256
    - Funkcja `checkExactDuplicate()` dla dokładnych duplikatów
    - Funkcja `calculateSimilarity()` dla podobieństwa treści
    - Główna funkcja `checkDuplicate()`
 
 3. **Utworzenie API endpoint** w `src/pages/api/flashcards/check-duplicate.ts`
-
    - Handler POST z walidacją Zod
    - Integracja z duplicate-check.service
    - Obsługa błędów i zwracanie odpowiedzi
 
 4. **Testy jednostkowe** dla service i endpoint
-
    - Test dokładnych duplikatów
    - Test podobieństwa treści
    - Test walidacji danych
    - Test autoryzacji
 
 5. **Integracja z frontend** (opcjonalnie)
-
    - Hook do sprawdzania duplikatów w czasie rzeczywistym
    - Komponenty UI dla ostrzeżeń o duplikatach
 

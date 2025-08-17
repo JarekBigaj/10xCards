@@ -339,20 +339,17 @@ Centralizada obsługa błędów z user-friendly komunikatami i możliwością re
 ### Phase 2 Możliwości:
 
 1. **Advanced Features:**
-
    - Drag & drop reordering
    - Bulk edit operations
    - Export/import functionality
    - Advanced search filters
 
 2. **Performance:**
-
    - Virtual scrolling for large datasets
    - Infinite scroll loading
    - Background sync
 
 3. **UX Improvements:**
-
    - Swipe gestures na mobile
    - Offline support
    - Real-time updates

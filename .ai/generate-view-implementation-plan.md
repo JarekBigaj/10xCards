@@ -348,20 +348,17 @@ const useGenerateFlashcards = () => {
 ## 8. Interakcje użytkownika
 
 1. **Wpisywanie tekstu**:
-
    - Real-time validation z debouncing (300ms)
    - Licznik znaków z kolorową sygnalizacją
    - Disable przycisku Generate przy nieprawidłowej długości
 
 2. **Generowanie**:
-
    - Click Generate → przejście do fazy loading
    - Progress indicator z retry counter
    - Automatyczne retry (maks. 2) z exponential backoff
    - Manual retry przy błędach
 
 3. **Przegląd kandydatów**:
-
    - Inline editing w tabeli (short content)
    - Modal editing (long content >200 chars)
    - Accept/Reject toggle per kandydata
@@ -430,55 +427,46 @@ const useGenerateFlashcards = () => {
 ## 11. Kroki implementacji
 
 1. **Struktura podstawowa**:
-
    - Utworzenie głównego komponentu `GenerateView.astro`
    - Setup routing w `src/pages/generate.astro`
    - Konfiguracja layoutu i nawigacji
 
 2. **Komponenty core**:
-
    - Implementacja `TextInputSection` z walidacją
    - Implementacja `LoadingSection` z progress indicator
    - Setup custom hook `useGenerateFlashcards`
 
 3. **Integracja AI**:
-
    - Integracja z endpoint `/api/ai/generate-candidates`
    - Implementacja retry logic z exponential backoff
    - Error handling dla AI service errors
 
 4. **Komponenty rezultatów**:
-
    - Implementacja `CandidatesTable` z `CandidateRow`
    - Inline editing functionality
    - `EditCandidateModal` dla długiej zawartości
 
 5. **Bulk actions i persistence**:
-
    - Implementacja `BulkActionsBar`
    - Session storage persistence
    - `SaveSelectedButton` z integracji flashcards API
 
 6. **Walidacja i error handling**:
-
    - Real-time validation dla wszystkich form fields
    - Comprehensive error handling
    - User feedback dla wszystkich operacji
 
 7. **Styling i responsywność**:
-
    - Tailwind CSS styling zgodny z design system
    - Responsywny design dla mobile/tablet
    - Accessibility improvements (ARIA labels, keyboard navigation)
 
 8. **Testing i polish**:
-
    - Unit testy dla custom hook i komponentów
    - Integration testy dla API calls
    - UX polish (loading states, transitions, micro-interactions)
 
 9. **Performance optimization**:
-
    - Lazy loading dla dużych list kandydatów
    - Debouncing dla input validation
    - Optimization session storage operations

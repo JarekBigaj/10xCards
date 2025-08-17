@@ -113,25 +113,21 @@ interface OpenRouterRequest {
 ## 5. Przepływ danych
 
 1. **Walidacja żądania**:
-
    - Sprawdzenie autoryzacji użytkownika (middleware Astro)
    - Walidacja struktury i zawartości żądania (Zod)
    - Sprawdzenie limitów rate-limiting
 
 2. **Przygotowanie żądania AI**:
-
    - Konstrukcja promptu systemowego dla generacji fiszek
    - Konfiguracja parametrów modelu AI
    - Przygotowanie struktury żądania do OpenRouter
 
 3. **Wywołanie usługi AI**:
-
    - Wysłanie żądania do OpenRouter API
    - Obsługa mechanizmu retry z exponential backoff
    - Parsowanie i walidacja odpowiedzi AI
 
 4. **Przetwarzanie odpowiedzi**:
-
    - Parsowanie JSON z wygenerowanymi kandydatami
    - Walidacja struktury każdego kandydata
    - Przypisanie tymczasowych UUID oraz ocen pewności

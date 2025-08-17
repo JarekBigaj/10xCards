@@ -453,4 +453,3 @@ const errorMap = {
 - Feature flag `AUTH_ENABLED` pozwala na szybki rollback
 - Database migrations są backwards-compatible
 - Supabase Auth settings można szybko przywrócić
-

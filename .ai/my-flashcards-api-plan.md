@@ -22,26 +22,21 @@ Analiza pokazuje, że większość potrzebnych endpointów już istnieje:
 #### ✅ Już zaimplementowane:
 
 1. **GET /api/flashcards** - Lista fiszek z paginacją i filtrami
-
    - Obsługuje: page, limit, source, due_before, sort, order
    - Zwraca: flashcards[] + pagination metadata
 
 2. **POST /api/flashcards** - Tworzenie fiszek (single + batch)
-
    - Obsługuje walidację, duplicate detection
    - Zwraca: utworzone fiszki lub błędy walidacji
 
 3. **GET /api/flashcards/{id}** - Pojedyncza fiszka
-
    - Zwraca: szczegóły fiszki lub 404
 
 4. **PUT /api/flashcards/{id}** - Aktualizacja fiszki
-
    - Obsługuje walidację, source musi być ai-edit lub manual
    - Zwraca: zaktualizowaną fiszkę
 
 5. **DELETE /api/flashcards/{id}** - Soft delete fiszki
-
    - Ustawia is_deleted=true
    - Zwraca: success message
 

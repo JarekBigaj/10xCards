@@ -43,12 +43,10 @@ interface HomePageProps {
 Trzy główne funkcjonalności:
 
 1. **Automatyczne generowanie**
-
    - Ikona: lightning bolt
    - Opis: AI tworzy fiszki z tekstu
 
 2. **Inteligentne powtórki**
-
    - Ikona: bar chart
    - Opis: System adaptuje się do tempa nauki
 

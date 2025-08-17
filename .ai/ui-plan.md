@@ -311,14 +311,12 @@ Kluczowe założenia architektoniczne:
 ### 5.7 State Management Patterns
 
 - **Global State (Zustand)**:
-
   - User authentication status
   - UI preferences (theme, language)
   - Current study session state
   - Navigation state (mobile menu open/closed)
 
 - **Local State (React)**:
-
   - Form inputs i validation
   - Table sorting i filtering
   - Modal open/closed states
