@@ -1,6 +1,8 @@
 import React from "react";
 import { AuthButton } from "./AuthButton";
 import { UserMenu } from "./UserMenu";
+import { NavigationBadge } from "./NavigationBadge";
+import { useFlashcardCounts } from "../../lib/hooks/useFlashcardCounts";
 
 interface User {
   id: string;
@@ -15,6 +17,7 @@ interface NavigationProps {
 
 export function Navigation({ user, currentPath }: NavigationProps) {
   const isAuthPage = currentPath.startsWith("/auth/");
+  const { total: flashcardsCount, dueToday } = useFlashcardCounts();
 
   return (
     <nav className="bg-background border-b border-border">
@@ -72,6 +75,7 @@ export function Navigation({ user, currentPath }: NavigationProps) {
                       }`}
                     >
                       Moje fiszki
+                      {user && <NavigationBadge count={flashcardsCount} />}
                     </a>
                     <a
                       href="/study"
@@ -80,6 +84,7 @@ export function Navigation({ user, currentPath }: NavigationProps) {
                       }`}
                     >
                       Sesja nauki
+                      {user && <NavigationBadge count={dueToday} variant="urgent" />}
                     </a>
                   </>
                 ) : (
@@ -113,7 +118,7 @@ export function Navigation({ user, currentPath }: NavigationProps) {
               </div>
             )}
 
-            {user ? <UserMenu user={user} /> : <AuthButton />}
+            <AuthButton user={user} />
           </div>
         </div>
       </div>
@@ -152,7 +157,10 @@ export function Navigation({ user, currentPath }: NavigationProps) {
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   }`}
                 >
-                  Moje fiszki
+                  <span className="flex items-center">
+                    Moje fiszki
+                    <NavigationBadge count={flashcardsCount} />
+                  </span>
                 </a>
                 <a
                   href="/study"
@@ -162,7 +170,10 @@ export function Navigation({ user, currentPath }: NavigationProps) {
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   }`}
                 >
-                  Sesja nauki
+                  <span className="flex items-center">
+                    Sesja nauki
+                    <NavigationBadge count={dueToday} variant="urgent" />
+                  </span>
                 </a>
               </>
             ) : (

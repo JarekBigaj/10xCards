@@ -34,6 +34,12 @@ The MVP includes a simple user authentication system, AI error handling with ret
 - **GitHub Actions** for CI/CD workflows
 - **DigitalOcean** (Droplets + Load Balancer) for hosting
 
+### Testing Technologies
+
+- **Vitest** with **React Testing Library** for unit and integration tests
+- **Playwright** for end-to-end testing automation
+- **MSW (Mock Service Worker)** for API mocking during tests
+
 ## Getting Started Locally
 
 ### Prerequisites

@@ -329,6 +329,114 @@ export interface GenerationAnalyticsResponseData {
 export type GenerationAnalyticsResponse = ApiResponse<GenerationAnalyticsResponseData>;
 
 // =============================================================================
+// BULK OPERATIONS DTO TYPES
+// =============================================================================
+
+/**
+ * Request body for bulk delete operation
+ */
+export interface BulkDeleteRequest {
+  flashcard_ids: string[]; // Array of UUIDs, max 100
+}
+
+/**
+ * Individual update item for bulk operations
+ */
+export interface BulkUpdateItem {
+  id: string; // UUID
+  front_text?: string; // Max 200 chars, optional
+  back_text?: string; // Max 500 chars, optional
+  source: "ai-edit" | "manual"; // Required
+}
+
+/**
+ * Request body for bulk update operation
+ */
+export interface BulkUpdateRequest {
+  updates: BulkUpdateItem[]; // Array of updates, max 50
+}
+
+/**
+ * Error details for bulk operations
+ */
+export interface BulkOperationError {
+  flashcard_id: string;
+  error: string;
+  code: "NOT_FOUND" | "VALIDATION_ERROR" | "PERMISSION_DENIED" | "DUPLICATE";
+}
+
+/**
+ * Response data for bulk delete operation
+ */
+export interface BulkDeleteResponseData {
+  deleted_count: number;
+  failed_count: number;
+  errors: BulkOperationError[];
+}
+
+/**
+ * Complete response for bulk delete operation
+ */
+export type BulkDeleteResponse = ApiResponse<BulkDeleteResponseData>;
+
+/**
+ * Response data for bulk update operation
+ */
+export interface BulkUpdateResponseData {
+  updated_count: number;
+  failed_count: number;
+  flashcards: FlashcardDto[];
+  errors: BulkOperationError[];
+}
+
+/**
+ * Complete response for bulk update operation
+ */
+export type BulkUpdateResponse = ApiResponse<BulkUpdateResponseData>;
+
+// =============================================================================
+// FLASHCARD STATISTICS DTO TYPES
+// =============================================================================
+
+/**
+ * Statistics breakdown by difficulty
+ */
+export interface FlashcardsByDifficulty {
+  easy: number; // difficulty 0-2
+  medium: number; // difficulty 2-4
+  hard: number; // difficulty 4-5
+}
+
+/**
+ * Comprehensive flashcard statistics
+ */
+export interface FlashcardStats {
+  total_count: number;
+  by_source: FlashcardsBySource;
+  by_difficulty: FlashcardsByDifficulty;
+  due_today: number;
+  due_this_week: number;
+  overdue: number;
+  never_reviewed: number;
+  avg_difficulty: number;
+  total_reviews: number;
+  created_this_month: number;
+  longest_streak: number;
+}
+
+/**
+ * Response data for flashcard statistics
+ */
+export interface FlashcardStatsResponseData {
+  stats: FlashcardStats;
+}
+
+/**
+ * Complete response for flashcard statistics
+ */
+export type FlashcardStatsResponse = ApiResponse<FlashcardStatsResponseData>;
+
+// =============================================================================
 // COMMAND MODEL TYPES (for internal use)
 // =============================================================================
 
@@ -376,6 +484,21 @@ export interface FlashcardListQuery {
   due_before?: string; // ISO timestamp
   sort?: "created_at" | "due" | "difficulty";
   order?: "asc" | "desc";
+}
+
+/**
+ * Extended query parameters for flashcard list with search and advanced filtering
+ */
+export interface ExtendedFlashcardListQuery extends FlashcardListQuery {
+  search?: string; // Full-text search
+  created_after?: string; // ISO date
+  created_before?: string; // ISO date
+  difficulty_min?: number; // 0.0 - 5.0
+  difficulty_max?: number; // 0.0 - 5.0
+  reps_min?: number; // >= 0
+  reps_max?: number; // >= 0
+  never_reviewed?: boolean; // fiszki nigdy nie przeglądane
+  due_only?: boolean; // tylko fiszki do powtórki
 }
 
 /**

@@ -1,9 +1,10 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
 import { FlashcardService } from "../../lib/services/flashcard.service";
-import { getCurrentUserId, getUserIdFromLocals, createAuthenticationError } from "../../lib/utils/auth";
+import { requireAuth } from "../../lib/utils/auth";
 import {
   FlashcardListQuerySchema,
+  ExtendedFlashcardListQuerySchema,
   formatFlashcardValidationErrors,
   CreateFlashcardRequestSchema,
   CreateFlashcardsRequestSchema,
@@ -12,6 +13,7 @@ import type {
   FlashcardsListResponse,
   ErrorResponse,
   FlashcardListQuery,
+  ExtendedFlashcardListQuery,
   CreateFlashcardRequest,
   CreateFlashcardsRequest,
   CreateFlashcardResponse,
@@ -28,36 +30,38 @@ export const prerender = false;
 export const GET: APIRoute = async ({ request, locals }) => {
   try {
     // Check authentication
+    const authResult = await requireAuth(locals);
+    if ("error" in authResult) {
+      return authResult.error;
+    }
+
+    const { userId } = authResult;
     const supabase = locals.supabase;
-    if (!supabase) {
-      const errorResponse: ErrorResponse = {
-        success: false,
-        error: "Supabase client not available",
-      };
-      return new Response(JSON.stringify(errorResponse), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    // Get current user ID from middleware (preferred method)
-    const { userId, error: authError } = getUserIdFromLocals(locals);
-
-    if (!userId || authError) {
-      const errorResponse = createAuthenticationError();
-      return new Response(JSON.stringify(errorResponse), {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
 
     // Parse and validate query parameters
     const url = new URL(request.url);
     const queryParams = Object.fromEntries(url.searchParams.entries());
 
-    let validatedQuery: FlashcardListQuery;
+    // Check if any extended search parameters are present
+    const hasExtendedParams = [
+      "search",
+      "created_after",
+      "created_before",
+      "difficulty_min",
+      "difficulty_max",
+      "reps_min",
+      "reps_max",
+      "never_reviewed",
+      "due_only",
+    ].some((param) => queryParams[param] !== undefined);
+
+    let validatedQuery: FlashcardListQuery | ExtendedFlashcardListQuery;
     try {
-      validatedQuery = FlashcardListQuerySchema.parse(queryParams);
+      if (hasExtendedParams) {
+        validatedQuery = ExtendedFlashcardListQuerySchema.parse(queryParams);
+      } else {
+        validatedQuery = FlashcardListQuerySchema.parse(queryParams);
+      }
     } catch (error) {
       if (error instanceof z.ZodError) {
         const validationErrors = formatFlashcardValidationErrors(error);
@@ -76,7 +80,9 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
     // Initialize service and fetch flashcards
     const flashcardService = new FlashcardService(supabase);
-    const result = await flashcardService.getFlashcards(userId, validatedQuery);
+    const result = hasExtendedParams
+      ? await flashcardService.getFlashcardsExtended(userId, validatedQuery as ExtendedFlashcardListQuery)
+      : await flashcardService.getFlashcards(userId, validatedQuery as FlashcardListQuery);
 
     // Return successful response
     const successResponse: FlashcardsListResponse = {
@@ -124,28 +130,13 @@ export const GET: APIRoute = async ({ request, locals }) => {
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
     // Check authentication
+    const authResult = await requireAuth(locals);
+    if ("error" in authResult) {
+      return authResult.error;
+    }
+
+    const { userId } = authResult;
     const supabase = locals.supabase;
-    if (!supabase) {
-      const errorResponse: ErrorResponse = {
-        success: false,
-        error: "Supabase client not available",
-      };
-      return new Response(JSON.stringify(errorResponse), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    // Get current user ID from middleware (preferred method)
-    const { userId, error: authError } = getUserIdFromLocals(locals);
-
-    if (!userId || authError) {
-      const errorResponse = createAuthenticationError();
-      return new Response(JSON.stringify(errorResponse), {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
 
     // Parse request body
     let requestBody: unknown;

@@ -43,3 +43,24 @@ Poniżej znajduje się szczegółowy opis użytych technologii wraz z kluczowymi
   Prosty VPS z możliwością szybkiego skalowania pionowego (większy droplet) i poziomego (load-balancer + kolejne instancje).  
   • Niskie koszty początkowe (~5–10 USD/miesiąc)  
   • Wymaga ręcznej konfiguracji firewall, SSL, backupów i monitoringu, co warto zaplanować przy rozwoju po MVP
+
+## Technologie Testowe
+
+- **Vitest + React Testing Library**  
+  Szybki test runner zoptymalizowany pod Vite z biblioteką do testowania komponentów React.  
+  • Natywna integracja z TypeScript i ES modules  
+  • Symulacja user interactions i DOM testing  
+  • Minimalne setup – działa out-of-the-box z projektami Vite/Astro
+
+- **Playwright**  
+  Framework do automatyzacji testów end-to-end w prawdziwych przeglądarkach.  
+  • Cross-browser testing (Chrome, Firefox, Safari, Edge)  
+  • Headless i headed modes dla różnych scenariuszy  
+  • Built-in waiting strategies i auto-retry mechanisms  
+  • Screenshots i video recording dla debugging
+
+- **MSW (Mock Service Worker)**  
+  Narzędzie do mockowania API requests na poziomie network layer.  
+  • Izolacja testów od zewnętrznych serwisów (OpenRouter.ai, Supabase)  
+  • Deterministyczne responses dla konsystentnych wyników testów  
+  • Możliwość symulacji błędów i edge cases

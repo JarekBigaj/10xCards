@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { Navigation } from "../components/navigation/Navigation";
+import { ProfileManager } from "../components/auth/ProfileManager";
 
 // Auth check - middleware już przekierowuje niezalogowanych użytkowników
 const { user } = Astro.locals;
@@ -35,65 +36,8 @@ const userData = {
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Main Content -->
         <div class="lg:col-span-2 space-y-6">
-          <!-- Account Information -->
-          <div class="bg-card border border-border rounded-xl p-6">
-            <div class="flex items-center justify-between mb-6">
-              <h2 class="text-lg font-semibold text-card-foreground">Informacje o koncie</h2>
-              <span class="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-md"> Premium: Niedostępne </span>
-            </div>
-
-            <div class="space-y-6">
-              <!-- Email -->
-              <div>
-                <label class="block text-sm font-medium text-foreground mb-2"> Adres email </label>
-                <div class="flex items-center justify-between p-3 bg-muted/50 rounded-md">
-                  <span class="text-card-foreground">{userData.email}</span>
-                  {
-                    userData.email_confirmed ? (
-                      <span class="flex items-center text-xs text-green-600 dark:text-green-400">
-                        <svg class="mr-1 h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-                          <path
-                            fill-rule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                            clip-rule="evenodd"
-                          />
-                        </svg>
-                        Potwierdzony
-                      </span>
-                    ) : (
-                      <button class="text-xs text-amber-600 dark:text-amber-400 hover:underline">
-                        Potwierdź email
-                      </button>
-                    )
-                  }
-                </div>
-              </div>
-
-              <!-- Member Since -->
-              <div>
-                <label class="block text-sm font-medium text-foreground mb-2"> Członek od </label>
-                <div class="p-3 bg-muted/50 rounded-md">
-                  <span class="text-card-foreground"
-                    >{userData.created_at.toLocaleDateString("pl-PL", { year: "numeric", month: "long" })}</span
-                  >
-                </div>
-              </div>
-
-              <!-- Actions -->
-              <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
-                <button
-                  class="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-sm font-medium"
-                >
-                  Zmień hasło
-                </button>
-                <button
-                  class="flex-1 px-4 py-2 border border-border text-foreground rounded-md hover:bg-muted transition-colors text-sm font-medium"
-                >
-                  Edytuj profil
-                </button>
-              </div>
-            </div>
-          </div>
+          <!-- Profile Manager with Interactive Components -->
+          <ProfileManager user={userData} client:load />
 
           <!-- Learning Preferences -->
           <div class="bg-card border border-border rounded-xl p-6">
@@ -142,19 +86,6 @@ const userData = {
                 </div>
               </div>
             </div>
-          </div>
-
-          <!-- Danger Zone -->
-          <div class="bg-card border border-destructive/20 rounded-xl p-6">
-            <h2 class="text-lg font-semibold text-destructive mb-2">Strefa niebezpieczna</h2>
-            <p class="text-sm text-muted-foreground mb-4">
-              Te akcje są nieodwracalne. Upewnij się, że naprawdę chcesz je wykonać.
-            </p>
-            <button
-              class="px-4 py-2 bg-destructive text-white rounded-md hover:bg-destructive/90 transition-colors text-sm font-medium"
-            >
-              Usuń konto
-            </button>
           </div>
         </div>
 

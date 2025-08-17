@@ -1,7 +1,9 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "../../../db/database.types";
 import { FlashcardService } from "../../../lib/services/flashcard.service";
-import { getCurrentUserId, getUserIdFromLocals, createAuthenticationError } from "../../../lib/utils/auth";
+import { requireAuth } from "../../../lib/utils/auth";
 import {
   UuidPathParamSchema,
   UpdateFlashcardRequestSchema,
@@ -30,17 +32,13 @@ export const prerender = false;
 export const PUT: APIRoute = async ({ request, params, locals }) => {
   try {
     // Check authentication
+    const authResult = await requireAuth(locals);
+    if ("error" in authResult) {
+      return authResult.error;
+    }
+
+    const { userId } = authResult;
     const supabase = locals.supabase;
-    if (!supabase) {
-      return createServerErrorResponse("Supabase client not available").response;
-    }
-
-    // Get current user ID from middleware (preferred method)
-    const { userId, error: authError } = getUserIdFromLocals(locals);
-
-    if (!userId || authError) {
-      return createAuthErrorResponse().response;
-    }
 
     // Validate path parameter (flashcard ID)
     let validatedParams: { id: string };
@@ -130,17 +128,13 @@ export const PUT: APIRoute = async ({ request, params, locals }) => {
 export const DELETE: APIRoute = async ({ params, locals }) => {
   try {
     // Check authentication
+    const authResult = await requireAuth(locals);
+    if ("error" in authResult) {
+      return authResult.error;
+    }
+
+    const { userId } = authResult;
     const supabase = locals.supabase;
-    if (!supabase) {
-      return createServerErrorResponse("Supabase client not available").response;
-    }
-
-    // Get current user ID from middleware (preferred method)
-    const { userId, error: authError } = getUserIdFromLocals(locals);
-
-    if (!userId || authError) {
-      return createAuthErrorResponse().response;
-    }
 
     // Validate path parameter (flashcard ID)
     let validatedParams: { id: string };
@@ -160,10 +154,22 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
       user_id: userId,
     };
 
-    // Initialize service and delete flashcard
+    // Initialize service and delete flashcard (using regular client with fixed RLS policy)
     const flashcardService = new FlashcardService(supabase);
 
     try {
+      // Ensure auth context is set for RLS with simplified policy
+      console.log("Session info:", locals.session ? "exists" : "missing");
+      console.log("Access token:", locals.session?.access_token ? "exists" : "missing");
+
+      if (locals.session?.access_token) {
+        await supabase.auth.setSession({
+          access_token: locals.session.access_token,
+          refresh_token: locals.session.refresh_token,
+        });
+        console.log("Session set in supabase client");
+      }
+
       await flashcardService.deleteFlashcard(command);
 
       // Return successful response

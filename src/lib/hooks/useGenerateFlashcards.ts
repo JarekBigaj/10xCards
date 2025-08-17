@@ -4,6 +4,8 @@ import type {
   AiGenerateCandidatesRequest,
   AiGenerateCandidatesResponse,
   CreateFlashcardsRequest,
+  CreateFlashcardsResponse,
+  FlashcardDto,
   AiServiceError,
   GenerationMetadata,
 } from "../../types";
@@ -39,6 +41,12 @@ export interface GenerateViewState {
   validationErrors: ValidationErrors;
   generationMetadata: GenerationMetadata | null;
   editingCandidate: CandidateWithStatus | null;
+  savedFlashcards: FlashcardDto[];
+  showSuccessNotification: boolean;
+}
+
+export interface SaveSuccessCallback {
+  onSuccess?: (flashcards: FlashcardDto[]) => void;
 }
 
 // Stan początkowy
@@ -53,6 +61,8 @@ const initialState: GenerateViewState = {
   validationErrors: {},
   generationMetadata: null,
   editingCandidate: null,
+  savedFlashcards: [],
+  showSuccessNotification: false,
 };
 
 // Debounce utility
@@ -206,65 +216,74 @@ export function useGenerateFlashcards() {
     [persistToSession]
   );
 
-  const saveSelectedCandidates = useCallback(async () => {
-    const acceptedCandidates = state.candidates.filter((c) => c.status === "accepted");
+  const saveSelectedCandidates = useCallback(
+    async (onSuccess?: (flashcards: FlashcardDto[]) => void) => {
+      const acceptedCandidates = state.candidates.filter((c) => c.status === "accepted");
 
-    if (acceptedCandidates.length === 0) {
-      return;
-    }
-
-    setState((prev) => ({ ...prev, isSaving: true }));
-
-    try {
-      const request: CreateFlashcardsRequest = {
-        flashcards: acceptedCandidates.map((candidate) => ({
-          front_text: candidate.front_text,
-          back_text: candidate.back_text,
-          source: "ai-full" as const,
-          candidate_id: candidate.id,
-        })),
-      };
-
-      const response = await fetch("/api/flashcards", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(request),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Błąd zapisywania fiszek");
+      if (acceptedCandidates.length === 0) {
+        return [];
       }
 
-      // Clear session storage and reset state
-      if (typeof window !== "undefined") {
-        sessionStorage.removeItem("ai-candidates");
-      }
-      setState((prev) => ({
-        ...initialState,
-        inputText: prev.inputText, // Keep input text for potential reuse
-        phase: "input",
-      }));
+      setState((prev) => ({ ...prev, isSaving: true }));
 
-      // Show success message - in production this should be replaced with a proper notification system
-      // For now, we'll use a simple success state that can be handled by the UI
-      setState((prev) => ({
-        ...prev,
-        isSaving: false,
-        // TODO: Add success notification state and redirect to flashcards list
-      }));
-    } catch (error) {
-      setState((prev) => ({
-        ...prev,
-        isSaving: false,
-        error: {
-          code: "UNKNOWN",
-          message: error instanceof Error ? error.message : "Błąd zapisywania",
-          is_retryable: true,
-        },
-      }));
-    }
-  }, [state.candidates]);
+      try {
+        const request: CreateFlashcardsRequest = {
+          flashcards: acceptedCandidates.map((candidate) => ({
+            front_text: candidate.front_text,
+            back_text: candidate.back_text,
+            source: candidate.isEdited ? "ai-edit" : "ai-full",
+            candidate_id: candidate.id,
+          })),
+        };
+
+        const response = await fetch("/api/flashcards", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(request),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Błąd zapisywania fiszek");
+        }
+
+        const result: CreateFlashcardsResponse = await response.json();
+        const savedFlashcards = result.data.flashcards;
+
+        // Clear session storage and reset state
+        if (typeof window !== "undefined") {
+          sessionStorage.removeItem("ai-candidates");
+        }
+
+        setState((prev) => ({
+          ...initialState,
+          inputText: prev.inputText, // Keep input text for potential reuse
+          phase: "input",
+          savedFlashcards,
+          showSuccessNotification: true,
+        }));
+
+        // Call success callback if provided
+        if (onSuccess) {
+          onSuccess(savedFlashcards);
+        }
+
+        return savedFlashcards;
+      } catch (error) {
+        setState((prev) => ({
+          ...prev,
+          isSaving: false,
+          error: {
+            code: "UNKNOWN",
+            message: error instanceof Error ? error.message : "Błąd zapisywania",
+            is_retryable: true,
+          },
+        }));
+        return [];
+      }
+    },
+    [state.candidates]
+  );
 
   const bulkAction = useCallback(
     (action: "accept-all" | "reject-all" | "clear-selection") => {
@@ -335,6 +354,10 @@ export function useGenerateFlashcards() {
     setState((prev) => ({ ...prev, editingCandidate: candidate }));
   }, []);
 
+  const dismissSuccessNotification = useCallback(() => {
+    setState((prev) => ({ ...prev, showSuccessNotification: false }));
+  }, []);
+
   return {
     state,
     actions: {
@@ -349,6 +372,7 @@ export function useGenerateFlashcards() {
       saveCandidateEdit,
       cancelCandidateEdit,
       openCandidateEdit,
+      dismissSuccessNotification,
     },
   };
 }

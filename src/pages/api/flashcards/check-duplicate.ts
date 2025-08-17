@@ -4,7 +4,7 @@ import {
   formatFlashcardValidationErrors,
 } from "../../../lib/validation/flashcard-schemas";
 import { checkDuplicate } from "../../../lib/services/duplicate-check.service";
-import { getCurrentUserId, getUserIdFromLocals, createAuthenticationError } from "../../../lib/utils/auth";
+import { requireAuth } from "../../../lib/utils/auth";
 import type { CheckDuplicateRequest, DuplicateCheckResponse, ErrorResponse } from "../../../types";
 
 export const prerender = false;
@@ -15,16 +15,13 @@ export const prerender = false;
  */
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    // Get current user ID from middleware (preferred method)
-    const { userId, error: authError } = getUserIdFromLocals(locals);
-
-    if (!userId || authError) {
-      const errorResponse = createAuthenticationError();
-      return new Response(JSON.stringify(errorResponse), {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      });
+    // Check authentication
+    const authResult = await requireAuth(locals);
+    if ("error" in authResult) {
+      return authResult.error;
     }
+
+    const { userId } = authResult;
 
     // Parse and validate request body
     let requestBody: unknown;

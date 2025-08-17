@@ -3,6 +3,7 @@ import type { Tables } from "../../db/database.types";
 import type {
   FlashcardDto,
   FlashcardListQuery,
+  ExtendedFlashcardListQuery,
   FlashcardsListResponseData,
   PaginationDto,
   CreateFlashcardCommand,
@@ -13,6 +14,14 @@ import type {
   DeleteFlashcardCommand,
   FlashcardGenerationRequest,
   GeneratedFlashcard,
+  BulkDeleteRequest,
+  BulkDeleteResponseData,
+  BulkUpdateRequest,
+  BulkUpdateResponseData,
+  BulkOperationError,
+  FlashcardStats,
+  FlashcardsBySource,
+  FlashcardsByDifficulty,
 } from "../../types";
 import { generateContentHash } from "./duplicate-check.service";
 import { createAiService } from "./ai.service";
@@ -95,6 +104,121 @@ export class FlashcardService {
       };
     } catch (error) {
       console.error("Error in FlashcardService.getFlashcards:", error);
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error("Unknown error occurred while fetching flashcards");
+    }
+  }
+
+  /**
+   * Get user's flashcards with extended filtering, search, and pagination
+   */
+  async getFlashcardsExtended(userId: string, query: ExtendedFlashcardListQuery): Promise<FlashcardsListResponseData> {
+    try {
+      // Build the base query
+      let supabaseQuery = this.supabase
+        .from("flashcards")
+        .select("*", { count: "exact" })
+        .eq("user_id", userId)
+        .eq("is_deleted", false);
+
+      // Apply basic filters (from base FlashcardListQuery)
+      if (query.source) {
+        supabaseQuery = supabaseQuery.eq("source", query.source);
+      }
+
+      if (query.due_before) {
+        supabaseQuery = supabaseQuery.lte("due", query.due_before);
+      }
+
+      // Apply extended filters
+      if (query.created_after) {
+        supabaseQuery = supabaseQuery.gte("created_at", query.created_after);
+      }
+
+      if (query.created_before) {
+        supabaseQuery = supabaseQuery.lte("created_at", query.created_before);
+      }
+
+      if (query.difficulty_min !== undefined) {
+        supabaseQuery = supabaseQuery.gte("difficulty", query.difficulty_min);
+      }
+
+      if (query.difficulty_max !== undefined) {
+        supabaseQuery = supabaseQuery.lte("difficulty", query.difficulty_max);
+      }
+
+      if (query.reps_min !== undefined) {
+        supabaseQuery = supabaseQuery.gte("reps", query.reps_min);
+      }
+
+      if (query.reps_max !== undefined) {
+        supabaseQuery = supabaseQuery.lte("reps", query.reps_max);
+      }
+
+      if (query.never_reviewed) {
+        supabaseQuery = supabaseQuery.eq("reps", 0);
+      }
+
+      if (query.due_only) {
+        const now = new Date().toISOString();
+        supabaseQuery = supabaseQuery.lte("due", now);
+      }
+
+      // Apply full-text search if provided
+      if (query.search) {
+        // Note: We're using simple text search here. For production, consider adding
+        // a full-text search index for better performance
+        supabaseQuery = supabaseQuery.or(`front_text.ilike.%${query.search}%,back_text.ilike.%${query.search}%`);
+      }
+
+      // Apply sorting
+      const sortField = query.sort || "created_at";
+      const sortOrder = query.order || "desc";
+      const ascending = sortOrder === "asc";
+
+      supabaseQuery = supabaseQuery.order(sortField, { ascending });
+
+      // Apply pagination
+      const page = query.page || 1;
+      const limit = Math.min(query.limit || 20, 100); // Limit max results to 100
+      const offset = (page - 1) * limit;
+
+      supabaseQuery = supabaseQuery.range(offset, offset + limit - 1);
+
+      // Execute query
+      const { data, error, count } = await supabaseQuery;
+
+      if (error) {
+        console.error("Database error in getFlashcardsExtended:", error);
+        throw new Error(`Failed to fetch flashcards: ${error.message}`);
+      }
+
+      // Calculate pagination metadata
+      const totalCount = count || 0;
+      const totalPages = Math.ceil(totalCount / limit);
+
+      const pagination: PaginationDto = {
+        current_page: page,
+        total_pages: totalPages,
+        total_count: totalCount,
+        limit: limit,
+      };
+
+      // Transform data to DTOs (remove user_id, is_deleted, and hash fields)
+      const flashcards: FlashcardDto[] = (data || []).map((flashcard) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { user_id, is_deleted, front_text_hash, back_text_hash, ...flashcardDto } = flashcard;
+        return flashcardDto;
+      });
+
+      return {
+        flashcards,
+        pagination,
+      };
+    } catch (error) {
+      console.error("Error in FlashcardService.getFlashcardsExtended:", error);
       if (error instanceof Error) {
         throw error;
       }
@@ -250,8 +374,10 @@ export class FlashcardService {
         .single();
 
       if (error) {
+        console.log(`Database error in getFlashcardById:`, error);
         if (error.code === "PGRST116") {
           // No rows returned
+          console.log(`No flashcard found with ID: ${flashcardId}`);
           return null;
         }
         console.error("Database error in getFlashcardById:", error);
@@ -369,35 +495,36 @@ export class FlashcardService {
    */
   async deleteFlashcard(command: DeleteFlashcardCommand): Promise<void> {
     try {
-      // Step 1: Check if flashcard exists and belongs to user
-      const existingFlashcard = await this.getFlashcardById(command.id, command.user_id);
-      if (!existingFlashcard) {
-        throw new Error("NOT_FOUND");
-      }
+      console.log(`Attempting to delete flashcard: ${command.id} for user: ${command.user_id}`);
 
-      // Step 2: Perform soft delete - set is_deleted = true
-      const { error } = await this.supabase
-        .from("flashcards")
-        .update({
-          is_deleted: true,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", command.id)
-        .eq("user_id", command.user_id)
-        .eq("is_deleted", false); // Only delete if not already deleted
+      // Using service role client - no need for auth context checks
+
+      // Perform soft delete using direct SQL to bypass potential RLS/ORM issues
+      const { data, error } = await this.supabase.rpc("soft_delete_flashcard", {
+        flashcard_id: command.id,
+        user_id_param: command.user_id,
+      });
 
       if (error) {
         console.error("Database error in deleteFlashcard:", error);
+        console.error("Error details:", JSON.stringify(error, null, 2));
         throw new Error(`Failed to delete flashcard: ${error.message}`);
       }
 
-      // Note: We don't check affected rows since RLS ensures proper access control
-      // and we already verified existence above
+      // Check if any rows were affected (RPC returns number of affected rows)
+      const affectedRows = data || 0;
+      if (affectedRows === 0) {
+        console.log(`No flashcard found or already deleted: ${command.id}`);
+        throw new Error("NOT_FOUND");
+      }
 
       // Log successful deletion for audit purposes
-      console.log(`Flashcard deleted successfully: ${command.id} by user: ${command.user_id}`);
+      console.log(`Flashcard deleted successfully: ${command.id} by user: ${command.user_id}`, data);
     } catch (error) {
       console.error("Error in FlashcardService.deleteFlashcard:", error);
+      console.error("Error type:", error instanceof Error ? "Error" : typeof error);
+      console.error("Error message:", error instanceof Error ? error.message : error);
+
       if (error instanceof Error && error.message === "NOT_FOUND") {
         throw error;
       }
@@ -527,7 +654,7 @@ export class FlashcardService {
     // We need to ensure the final topic is <= 200 chars
     // Account for potential ellipsis (3 chars)
     const maxLength = 197; // 200 - 3 for ellipsis
-    let truncated = text.substring(0, maxLength);
+    const truncated = text.substring(0, maxLength);
 
     // Look for sentence endings (., !, ?) to make a clean cut
     const sentenceEndings = [".", "!", "?", "\n"];
@@ -564,5 +691,262 @@ export class FlashcardService {
       openRouterStatus: this.aiService.getOpenRouterStatus(),
       openRouterMetrics: this.aiService.getOpenRouterMetrics(),
     };
+  }
+
+  // =============================================================================
+  // BULK OPERATIONS
+  // =============================================================================
+
+  /**
+   * Bulk delete multiple flashcards (soft delete)
+   */
+  async bulkDeleteFlashcards(userId: string, flashcardIds: string[]): Promise<BulkDeleteResponseData> {
+    try {
+      const results: { deleted_count: number; failed_count: number; errors: BulkOperationError[] } = {
+        deleted_count: 0,
+        failed_count: 0,
+        errors: [],
+      };
+
+      // Process each flashcard ID
+      for (const flashcardId of flashcardIds) {
+        try {
+          // Check if flashcard exists and belongs to user
+          const existingFlashcard = await this.getFlashcardById(flashcardId, userId);
+          if (!existingFlashcard) {
+            results.failed_count++;
+            results.errors.push({
+              flashcard_id: flashcardId,
+              error: "Flashcard not found",
+              code: "NOT_FOUND",
+            });
+            continue;
+          }
+
+          // Perform soft delete
+          const { error } = await this.supabase
+            .from("flashcards")
+            .update({
+              is_deleted: true,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", flashcardId)
+            .eq("user_id", userId)
+            .eq("is_deleted", false);
+
+          if (error) {
+            console.error(`Database error in bulk delete for flashcard ${flashcardId}:`, error);
+            results.failed_count++;
+            results.errors.push({
+              flashcard_id: flashcardId,
+              error: `Database error: ${error.message}`,
+              code: "VALIDATION_ERROR",
+            });
+          } else {
+            results.deleted_count++;
+          }
+        } catch (error) {
+          console.error(`Error deleting flashcard ${flashcardId}:`, error);
+          results.failed_count++;
+          results.errors.push({
+            flashcard_id: flashcardId,
+            error: error instanceof Error ? error.message : "Unknown error",
+            code: "VALIDATION_ERROR",
+          });
+        }
+      }
+
+      return results;
+    } catch (error) {
+      console.error("Error in FlashcardService.bulkDeleteFlashcards:", error);
+      throw new Error("Failed to process bulk delete operation");
+    }
+  }
+
+  /**
+   * Bulk update multiple flashcards
+   */
+  async bulkUpdateFlashcards(userId: string, updates: BulkUpdateRequest["updates"]): Promise<BulkUpdateResponseData> {
+    try {
+      const results: {
+        updated_count: number;
+        failed_count: number;
+        flashcards: FlashcardDto[];
+        errors: BulkOperationError[];
+      } = {
+        updated_count: 0,
+        failed_count: 0,
+        flashcards: [],
+        errors: [],
+      };
+
+      // Process each update
+      for (const update of updates) {
+        try {
+          // Create update command
+          const command: UpdateFlashcardCommand = {
+            id: update.id,
+            user_id: userId,
+            front_text: update.front_text,
+            back_text: update.back_text,
+            source: update.source,
+            updated_at: new Date().toISOString(),
+          };
+
+          const updatedFlashcard = await this.updateFlashcard(update.id, command, userId);
+          results.updated_count++;
+          results.flashcards.push(updatedFlashcard);
+        } catch (error) {
+          console.error(`Error updating flashcard ${update.id}:`, error);
+          results.failed_count++;
+
+          let errorCode: BulkOperationError["code"] = "VALIDATION_ERROR";
+          let errorMessage = "Failed to update flashcard";
+
+          if (error instanceof Error) {
+            if (error.message === "NOT_FOUND") {
+              errorCode = "NOT_FOUND";
+              errorMessage = "Flashcard not found";
+            } else if (error.message === "DUPLICATE") {
+              errorCode = "DUPLICATE";
+              errorMessage = "Flashcard with this front text already exists";
+            } else {
+              errorMessage = error.message;
+            }
+          }
+
+          results.errors.push({
+            flashcard_id: update.id,
+            error: errorMessage,
+            code: errorCode,
+          });
+        }
+      }
+
+      return results;
+    } catch (error) {
+      console.error("Error in FlashcardService.bulkUpdateFlashcards:", error);
+      throw new Error("Failed to process bulk update operation");
+    }
+  }
+
+  // =============================================================================
+  // STATISTICS
+  // =============================================================================
+
+  /**
+   * Get comprehensive flashcard statistics for a user
+   */
+  async getFlashcardStats(userId: string): Promise<FlashcardStats> {
+    try {
+      // Get all flashcards for the user (without pagination)
+      const { data: flashcards, error } = await this.supabase
+        .from("flashcards")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("is_deleted", false);
+
+      if (error) {
+        console.error("Database error in getFlashcardStats:", error);
+        throw new Error(`Failed to fetch flashcard statistics: ${error.message}`);
+      }
+
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const oneWeekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+      const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+      // Initialize statistics
+      const stats: FlashcardStats = {
+        total_count: flashcards?.length || 0,
+        by_source: {
+          "ai-full": 0,
+          "ai-edit": 0,
+          manual: 0,
+        },
+        by_difficulty: {
+          easy: 0,
+          medium: 0,
+          hard: 0,
+        },
+        due_today: 0,
+        due_this_week: 0,
+        overdue: 0,
+        never_reviewed: 0,
+        avg_difficulty: 0,
+        total_reviews: 0,
+        created_this_month: 0,
+        longest_streak: 0,
+      };
+
+      if (!flashcards || flashcards.length === 0) {
+        return stats;
+      }
+
+      // Calculate statistics
+      let totalDifficulty = 0;
+
+      for (const flashcard of flashcards) {
+        // Count by source
+        (stats.by_source as any)[flashcard.source]++;
+
+        // Count by difficulty
+        if (flashcard.difficulty <= 2) {
+          stats.by_difficulty.easy++;
+        } else if (flashcard.difficulty <= 4) {
+          stats.by_difficulty.medium++;
+        } else {
+          stats.by_difficulty.hard++;
+        }
+
+        // Accumulate difficulty for average
+        totalDifficulty += flashcard.difficulty;
+
+        // Count total reviews
+        stats.total_reviews += flashcard.reps;
+
+        // Check if never reviewed
+        if (flashcard.reps === 0) {
+          stats.never_reviewed++;
+        }
+
+        // Check due dates
+        const dueDate = new Date(flashcard.due);
+        const todayEnd = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+
+        if (dueDate <= todayEnd) {
+          stats.due_today++;
+        }
+
+        if (dueDate <= oneWeekFromNow) {
+          stats.due_this_week++;
+        }
+
+        if (dueDate < today) {
+          stats.overdue++;
+        }
+
+        // Check creation date
+        const createdDate = new Date(flashcard.created_at);
+        if (createdDate >= thisMonthStart) {
+          stats.created_this_month++;
+        }
+      }
+
+      // Calculate average difficulty
+      stats.avg_difficulty = Math.round((totalDifficulty / flashcards.length) * 100) / 100;
+
+      // For longest streak, we would need review_records table
+      // For now, set to 0 as placeholder
+      stats.longest_streak = 0;
+
+      return stats;
+    } catch (error) {
+      console.error("Error in FlashcardService.getFlashcardStats:", error);
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error("Unknown error occurred while fetching statistics");
+    }
   }
 }

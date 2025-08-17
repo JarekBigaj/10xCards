@@ -5,7 +5,7 @@ import type {
   ErrorResponse,
   AiGenerateCandidatesResponseData,
 } from "../../../types";
-import { DEFAULT_USER_ID, supabaseClient } from "../../../db/supabase.client";
+import { DEFAULT_USER_ID } from "../../../db/supabase.client";
 import { FlashcardService } from "../../../lib/services/flashcard.service";
 import {
   AiGenerateCandidatesRequestSchema,
@@ -123,7 +123,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     // Create Supabase client and FlashcardService
-    const supabase = supabaseClient;
+    const supabase = locals.supabase;
     const flashcardService = new FlashcardService(supabase);
 
     // Generate flashcard proposals using FlashcardService (which uses OpenRouter)

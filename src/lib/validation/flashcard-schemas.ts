@@ -108,6 +108,87 @@ export const CreateFlashcardsRequestSchema = z.object({
  */
 export const FlashcardCreationRequestSchema = z.union([CreateFlashcardRequestSchema, CreateFlashcardsRequestSchema]);
 
+// =============================================================================
+// BULK OPERATIONS SCHEMAS
+// =============================================================================
+
+/**
+ * Schema for bulk delete request validation
+ */
+export const BulkDeleteRequestSchema = z.object({
+  flashcard_ids: z
+    .array(z.string().uuid())
+    .min(1, "At least one flashcard ID is required")
+    .max(100, "Cannot delete more than 100 flashcards at once"),
+});
+
+/**
+ * Schema for individual bulk update item validation
+ */
+export const BulkUpdateItemSchema = z
+  .object({
+    id: z.string().uuid(),
+    front_text: z.string().min(1).max(200).trim().optional(),
+    back_text: z.string().min(1).max(500).trim().optional(),
+    source: z.enum(["ai-edit", "manual"]),
+  })
+  .refine((data) => data.front_text || data.back_text, {
+    message: "At least one field must be provided for update",
+  });
+
+/**
+ * Schema for bulk update request validation
+ */
+export const BulkUpdateRequestSchema = z.object({
+  updates: z
+    .array(BulkUpdateItemSchema)
+    .min(1, "At least one update is required")
+    .max(50, "Cannot update more than 50 flashcards at once"),
+});
+
+// =============================================================================
+// EXTENDED FILTERING SCHEMAS
+// =============================================================================
+
+/**
+ * Extended schema for flashcard list query parameters with search and advanced filtering
+ */
+export const ExtendedFlashcardListQuerySchema = FlashcardListQuerySchema.extend({
+  search: z.string().min(1).max(200).optional(),
+  created_after: z.string().datetime().optional(),
+  created_before: z.string().datetime().optional(),
+  difficulty_min: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseFloat(val) : undefined))
+    .pipe(z.number().min(0).max(5).optional()),
+  difficulty_max: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseFloat(val) : undefined))
+    .pipe(z.number().min(0).max(5).optional()),
+  reps_min: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseInt(val, 10) : undefined))
+    .pipe(z.number().int().min(0).optional()),
+  reps_max: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseInt(val, 10) : undefined))
+    .pipe(z.number().int().min(0).optional()),
+  never_reviewed: z
+    .string()
+    .optional()
+    .transform((val) => (val ? val === "true" : undefined))
+    .pipe(z.boolean().optional()),
+  due_only: z
+    .string()
+    .optional()
+    .transform((val) => (val ? val === "true" : undefined))
+    .pipe(z.boolean().optional()),
+});
+
 /**
  * Utility function to normalize text for comparison
  */

@@ -5,6 +5,7 @@ import { LoadingSection } from "./LoadingSection";
 import { ResultsSection } from "./ResultsSection";
 import { ErrorDisplay } from "./ErrorDisplay";
 import { EditCandidateModal } from "./EditCandidateModal";
+import { SuccessNotification } from "./SuccessNotification";
 
 interface GenerateViewClientProps {
   user?: {
@@ -72,6 +73,13 @@ export default function GenerateViewClient({ user }: GenerateViewClientProps) {
           onCancel={actions.cancelCandidateEdit}
         />
       )}
+
+      {/* Success Notification */}
+      <SuccessNotification
+        isVisible={state.showSuccessNotification}
+        flashcards={state.savedFlashcards}
+        onDismiss={actions.dismissSuccessNotification}
+      />
     </div>
   );
 }

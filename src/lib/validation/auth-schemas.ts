@@ -34,7 +34,22 @@ export const ResetPasswordSchema = z
     path: ["confirmPassword"],
   });
 
+export const ChangePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Obecne hasło jest wymagane"),
+    newPassword: z
+      .string()
+      .min(8, "Nowe hasło musi mieć co najmniej 8 znaków")
+      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Hasło musi zawierać małą literę, dużą literę i cyfrę"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Hasła nie są zgodne",
+    path: ["confirmPassword"],
+  });
+
 export type RegisterRequest = z.infer<typeof RegisterSchema>;
 export type LoginRequest = z.infer<typeof LoginSchema>;
 export type ForgotPasswordRequest = z.infer<typeof ForgotPasswordSchema>;
 export type ResetPasswordRequest = z.infer<typeof ResetPasswordSchema>;
+export type ChangePasswordRequest = z.infer<typeof ChangePasswordSchema>;

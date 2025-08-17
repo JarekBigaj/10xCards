@@ -104,6 +104,11 @@ const userData = {
                     Moje fiszki
                   </h3>
                   <p class="mt-1 text-sm text-muted-foreground">Przeglądaj i zarządzaj swoimi fiszkami</p>
+
+                  <!-- Dynamic stats -->
+                  <div class="mt-2 flex items-center text-xs text-muted-foreground" id="dashboard-flashcards-stats">
+                    <span class="loading">Ładowanie...</span>
+                  </div>
                 </div>
               </div>
             </a>
@@ -250,3 +255,31 @@ const userData = {
     </div>
   </main>
 </Layout>
+
+<script>
+  // Client-side stats loading
+  async function loadFlashcardStats() {
+    try {
+      const response = await fetch("/api/flashcards/stats");
+      const data = await response.json();
+
+      const statsElement = document.getElementById("dashboard-flashcards-stats");
+      if (statsElement && data.success) {
+        const { total_count, due_today } = data.data.stats;
+        statsElement.innerHTML = `
+          <span>${total_count} fiszek</span>
+          ${due_today > 0 ? `<span class="ml-2 text-orange-600">• ${due_today} do powtórki</span>` : ""}
+        `;
+      }
+    } catch (error) {
+      console.error("Failed to load flashcard stats:", error);
+      const statsElement = document.getElementById("dashboard-flashcards-stats");
+      if (statsElement) {
+        statsElement.innerHTML = '<span class="text-muted-foreground">-</span>';
+      }
+    }
+  }
+
+  // Load stats when page loads
+  document.addEventListener("DOMContentLoaded", loadFlashcardStats);
+</script>

@@ -72,3 +72,52 @@ export function createAuthenticationError() {
     error: "Authentication required",
   };
 }
+
+/**
+ * Require authentication in API endpoints
+ * Returns user data if authenticated, or error response if not
+ */
+export async function requireAuth(locals: App.Locals): Promise<
+  | {
+      user: NonNullable<App.Locals["user"]>;
+      userId: string;
+    }
+  | { error: Response }
+> {
+  const { userId, error } = getUserIdFromLocals(locals);
+
+  if (!userId || error) {
+    return {
+      error: new Response(
+        JSON.stringify({
+          success: false,
+          error: "Authentication required",
+          code: "UNAUTHENTICATED",
+        }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      ),
+    };
+  }
+
+  const user = locals.user;
+  if (!user) {
+    return {
+      error: new Response(
+        JSON.stringify({
+          success: false,
+          error: "User session not found",
+          code: "SESSION_NOT_FOUND",
+        }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      ),
+    };
+  }
+
+  return { user, userId };
+}

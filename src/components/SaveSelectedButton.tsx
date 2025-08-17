@@ -1,17 +1,29 @@
 import React from "react";
 import { Button } from "./ui/button";
+import type { FlashcardDto } from "../types";
 
 interface SaveSelectedButtonProps {
   selectedCount: number;
-  onSave: () => void;
+  onSave: (onSuccess?: (flashcards: FlashcardDto[]) => void) => void;
   isLoading: boolean;
   disabled: boolean;
+  onSaveSuccess?: (flashcards: FlashcardDto[]) => void;
 }
 
-export function SaveSelectedButton({ selectedCount, onSave, isLoading, disabled }: SaveSelectedButtonProps) {
+export function SaveSelectedButton({
+  selectedCount,
+  onSave,
+  isLoading,
+  disabled,
+  onSaveSuccess,
+}: SaveSelectedButtonProps) {
+  const handleSave = () => {
+    onSave(onSaveSuccess);
+  };
+
   return (
     <Button
-      onClick={onSave}
+      onClick={handleSave}
       disabled={disabled || isLoading}
       className="px-8 py-3 text-lg font-medium"
       variant={disabled ? "outline" : "default"}
