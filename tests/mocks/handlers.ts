@@ -47,7 +47,7 @@ export const handlers = [
   }),
 
   http.post(`${API_BASE_URL}/rest/v1/flashcards`, async ({ request }) => {
-    const flashcard = await request.json();
+    const flashcard = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json(
       {
         id: "new-flashcard-id",
@@ -61,7 +61,7 @@ export const handlers = [
   }),
 
   http.patch(`${API_BASE_URL}/rest/v1/flashcards`, async ({ request }) => {
-    const flashcard = await request.json();
+    const flashcard = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json({
       ...flashcard,
       updated_at: new Date().toISOString(),
@@ -77,7 +77,7 @@ export const handlers = [
     const body = await request.json();
 
     // Simulate different responses based on the request
-    if (body?.messages?.[0]?.content?.includes("error")) {
+    if (typeof body === "object" && body && "messages" in body && body.messages?.[0]?.content?.includes("error")) {
       return HttpResponse.json({ error: { message: "Simulated API error" } }, { status: 500 });
     }
 

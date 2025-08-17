@@ -99,7 +99,7 @@ export function CreateFlashcardModal({ isOpen, onClose, onSuccess, isLoading }: 
                 disabled={isLoading}
               />
               <div className="flex justify-between items-center">
-                <CharacterCounter current={frontText.length} max={200} />
+                <CharacterCounter current={frontText.length} max={200} min={0} />
                 {errors.frontText && <span className="text-sm text-destructive">{errors.frontText}</span>}
               </div>
             </div>
@@ -121,7 +121,7 @@ export function CreateFlashcardModal({ isOpen, onClose, onSuccess, isLoading }: 
                 disabled={isLoading}
               />
               <div className="flex justify-between items-center">
-                <CharacterCounter current={backText.length} max={500} />
+                <CharacterCounter current={backText.length} max={500} min={0} />
                 {errors.backText && <span className="text-sm text-destructive">{errors.backText}</span>}
               </div>
             </div>

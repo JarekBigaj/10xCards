@@ -38,7 +38,6 @@ export function FlashcardsTable({
 
   const { setTableRef } = useKeyboardNavigation({
     flashcards,
-    selectedIds,
     onToggleSelection: onSelectionChange,
     onSelectAll,
     onEdit,
@@ -95,7 +94,7 @@ export function FlashcardsTable({
                 <Checkbox
                   checked={isAllSelected}
                   ref={(input) => {
-                    if (input) input.indeterminate = isPartiallySelected;
+                    if (input) (input as HTMLInputElement).indeterminate = isPartiallySelected;
                   }}
                   onCheckedChange={handleSelectAll}
                   aria-label="Zaznacz wszystkie"

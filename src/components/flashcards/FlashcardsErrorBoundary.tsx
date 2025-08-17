@@ -11,6 +11,11 @@ interface FlashcardsErrorBoundaryState {
 interface FlashcardsErrorBoundaryProps {
   children: ReactNode;
 }
+declare global {
+  interface Window {
+    gtag: (...args: unknown[]) => void;
+  }
+}
 
 export class FlashcardsErrorBoundary extends Component<FlashcardsErrorBoundaryProps, FlashcardsErrorBoundaryState> {
   constructor(props: FlashcardsErrorBoundaryProps) {

@@ -40,11 +40,6 @@ export default defineConfig({
 
     // Test timeout
     testTimeout: 10000,
-
-    // Watch mode configuration
-    watch: {
-      clearScreen: false,
-    },
   },
 
   resolve: {

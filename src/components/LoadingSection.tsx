@@ -17,7 +17,7 @@ export function LoadingSection({ progress, retryCount, onCancel }: LoadingSectio
         <p className="text-gray-600 dark:text-gray-400">Analizuję tekst i tworzę kandydatów na fiszki...</p>
       </div>
 
-      <ProgressIndicator progress={progress} retryCount={retryCount} status="generating" />
+      <ProgressIndicator progress={progress} status="generating" />
 
       {onCancel && (
         <div className="flex justify-center">
