@@ -1,0 +1,30 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { Navigation } from "../components/navigation/Navigation";
+import GenerateView from "../components/GenerateView.astro";
+
+// Get user from locals (może być null - zgodnie z US-016)
+const { user } = Astro.locals;
+const currentPath = Astro.url.pathname;
+
+// Format user data for display if logged in
+const userData = user
+  ? {
+      id: user.id,
+      email: user.email || "",
+      email_confirmed: !!user.email_confirmed_at,
+      created_at: user.created_at ? new Date(user.created_at) : new Date(),
+    }
+  : null;
+---
+
+<Layout title="Generowanie fiszek AI">
+  <Navigation user={userData} currentPath={currentPath} client:load />
+
+  <main class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">Generowanie fiszek AI</h1>
+      <GenerateView user={userData} />
+    </div>
+  </main>
+</Layout>

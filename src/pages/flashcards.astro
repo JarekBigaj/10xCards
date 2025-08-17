@@ -1,0 +1,71 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { Navigation } from "../components/navigation/Navigation";
+import { FlashcardsView } from "../components/flashcards/FlashcardsView";
+import { FlashcardsErrorBoundary } from "../components/flashcards/FlashcardsErrorBoundary";
+import { FlashcardProvider } from "../lib/contexts/FlashcardContext";
+
+// Auth check
+const { user } = Astro.locals;
+if (!user) {
+  return Astro.redirect("/auth/login");
+}
+
+const currentPath = Astro.url.pathname;
+
+// Server-side data loading (optional, for SSR)
+let initialFlashcards = null;
+let initialStats = null;
+
+try {
+  // Pre-load first page of flashcards for faster initial render
+  const response = await fetch(`${Astro.url.origin}/api/flashcards?limit=20`, {
+    headers: {
+      Cookie: Astro.request.headers.get("cookie") || "",
+    },
+  });
+
+  if (response.ok) {
+    const data = await response.json();
+    initialFlashcards = data.data.flashcards;
+  }
+
+  // Pre-load stats
+  const statsResponse = await fetch(`${Astro.url.origin}/api/flashcards/stats`, {
+    headers: {
+      Cookie: Astro.request.headers.get("cookie") || "",
+    },
+  });
+
+  if (statsResponse.ok) {
+    const statsData = await statsResponse.json();
+    initialStats = statsData.data.stats;
+  }
+} catch (error) {
+  console.error("Failed to pre-load flashcards:", error);
+}
+
+const userData = {
+  id: user.id,
+  email: user.email || "",
+  email_confirmed: !!user.email_confirmed_at,
+  created_at: user.created_at ? new Date(user.created_at) : new Date(),
+};
+---
+
+<Layout title="Moje fiszki - 10xCards">
+  <Navigation user={userData} currentPath={currentPath} client:load />
+
+  <FlashcardProvider initialFlashcards={initialFlashcards} initialStats={initialStats} client:load>
+    <FlashcardsErrorBoundary client:load>
+      <FlashcardsView user={userData} initialFlashcards={initialFlashcards} initialStats={initialStats} client:load />
+    </FlashcardsErrorBoundary>
+  </FlashcardProvider>
+</Layout>
+
+<style>
+  /* Custom styles for flashcards page if needed */
+  body {
+    background-color: hsl(var(--background));
+  }
+</style>

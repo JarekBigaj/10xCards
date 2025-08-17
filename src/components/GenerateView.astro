@@ -1,0 +1,19 @@
+---
+// GenerateView - główny kontener widoku generowania fiszek AI
+import GenerateViewClient from "./GenerateViewClient.tsx";
+
+interface Props {
+  user?: {
+    id: string;
+    email: string;
+    email_confirmed: boolean;
+    created_at: Date;
+  } | null;
+}
+
+const { user } = Astro.props;
+---
+
+<div class="space-y-8">
+  <GenerateViewClient user={user} client:load />
+</div>

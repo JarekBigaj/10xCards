@@ -1,8 +1,8 @@
-# Dokument wymagań produktu (PRD) - MemoSpark
+# Dokument wymagań produktu (PRD) - 10xCards
 
 ## 1. Przegląd produktu
 
-FiszkiAI to webowa aplikacja do generowania i zarządzania kartami edukacyjnymi (flashcards) wykorzystująca sztuczną inteligencję (AI) i bibliotekę ts-fsrs v4 (Node ≥18, MIT) do planowania powtórek spaced repetition. Użytkownik może wkleić tekst (1000–10000 znaków), a system automatycznie segmentuje i generuje kandydatów na fiszki. Dodatkowo dostępne jest ręczne tworzenie, edycja oraz usuwanie fiszek. Założeniem MVP jest prosty system kont użytkowników, mechanizmy obsługi błędów AI z retry i circuit-breakerem oraz przechowywanie zaakceptowanych fiszek w bazie z metadanymi.
+10xCards to webowa aplikacja do generowania i zarządzania kartami edukacyjnymi (flashcards) wykorzystująca sztuczną inteligencję (AI) i bibliotekę ts-fsrs v4 (Node ≥18, MIT) do planowania powtórek spaced repetition. Użytkownik może wkleić tekst (1000–10000 znaków), a system automatycznie segmentuje i generuje kandydatów na fiszki. Dodatkowo dostępne jest ręczne tworzenie, edycja oraz usuwanie fiszek. Założeniem MVP jest prosty system kont użytkowników, mechanizmy obsługi błędów AI z retry i circuit-breakerem oraz przechowywanie zaakceptowanych fiszek w bazie z metadanymi.
 
 ## 2. Problem użytkownika
 
@@ -197,7 +197,16 @@ W MVP nie obejmujemy:
   Kryteria akceptacji:
 
   - Tylko zalogowany użytkownik może wyświetlać, edytować i usuwać swoje fiszki.
+  - Logowanie wymaga podania adresu email i hasła.
+  - Rejestracja wymaga podania adresu email, hasła i potwierdzenia hasła.
   - Nie ma dostępu do fiszek innych użytkowników ani możliwości współdzielenia
+  - Użytkownik MOŻE wygenerować fiszki z tekstu ale nie może ich zapisać.
+  - Tylko zalogowany użytkownik MOŻĘ zapisać fiszki
+  - Użytkownik może logować się do systemu poprzez przycisk w prawym górnym rogu
+  - Użytkownik może wylogować się z systemu poprzez przycisk w prawym górnym rogu
+  - Logowanie i rejestracja odbywaj sie na dedykowanych stronach
+  - Nie korzystamy z zewnętrznych serwisów logowania (np. Google, GitHub).
+  - Odzyskanie hasła powinno być możliwe
 
 ## 6. Metryki sukcesu
 
